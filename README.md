@@ -29,15 +29,23 @@ $: make js
 ```
 It compiles React to static files and creates bind data to serve it via HTTP.
 
+Example how to compile the plugin
+```text
+$: make plugin_relic
+```
+
 Build project for deployment, all files will be in `build` folders for "production"
 Example how executing the build 
 ```text
 $: make build
 ```
 
-Example how to compile the plugin
+Example of compiled folder:
 ```text
-$: make plugin_relic
+├── BitAccretion
+├── config.json
+├── processor.so
+└── sound.so
 ```
 
 ### Implementing own plugin

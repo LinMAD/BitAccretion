@@ -29,6 +29,12 @@ build: js
 plugin_relic:
 	go build -buildmode=plugin -o ./build/processor.so plugins/relic/newrelic.go
 
+## Compile new relic processor
+plugin_sound:
+	go build -buildmode=plugin -o ./build/sound.so plugins/misc/sound.go
+	rm -rf build/resources/sound && mkdir -p build/resources/sound
+	cp -r resources/sound build/resources
+
 ## Install project dependencies
 prepare:
 	go get -u golang.org/x/lint/golint

@@ -9,6 +9,7 @@ import (
 	"github.com/LinMAD/BitAccretion/plugins/relic/worker"
 	"log"
 	"os"
+	"plugin"
 	"sync"
 	"time"
 )
@@ -23,6 +24,13 @@ type NewRelicProcessor struct {
 	graph        *graph.Graph
 	vRegionGraph structure.VRegionGraph
 	relicWorker  *worker.RelicWorker
+	sound        safeSoundAlert
+}
+
+// safeSoundAlert is safe to play sound concurrently
+type safeSoundAlert struct {
+	SendSoundAlert func()
+	sync.Mutex
 }
 
 // NRConfig addition for config required for New Relic
@@ -30,6 +38,7 @@ type NRConfig struct {
 	APIKey            string                     `json:"api_key"`
 	APPSets           []APPSet                   `json:"app_sets"`
 	HealthSensitivity assembly.HealthSensitivity `json:"health_sensitivity"`
+	EnabledSoundAlert bool                       `json:"enabled_sound_alert"`
 }
 
 // APPSet registered in New Relic
@@ -109,6 +118,21 @@ func (nrp *NewRelicProcessor) Prepare() {
 	// Build graph
 	nrp.graph = assembly.MakeInfrastructureGraph(configApps)
 	nrp.vRegionGraph = assembly.ConvertToVizceral(nrp.graph, nrp.Config.HealthSensitivity)
+
+	// Load miscellaneous plugin to alerting by sound
+	if nrp.Config.EnabledSoundAlert {
+		mod, err := plugin.Open("sound.so")
+		if err != nil {
+			return
+		}
+
+		SendSoundAlert, err := mod.Lookup("SendSoundAlert")
+		if err != nil {
+			return
+		}
+
+		nrp.sound.SendSoundAlert = SendSoundAlert.(func())
+	}
 }
 
 // GetLastAppGraph implementation of core.IProcessor
@@ -123,7 +147,7 @@ func (nrp *NewRelicProcessor) Run() {
 
 	go func() {
 		defer wg.Done()
-		for range time.Tick(30 * time.Second) {
+		for range time.Tick(20 * time.Second) {
 			nrp.handleMonitoring()
 			return
 		}
@@ -155,7 +179,6 @@ func (nrp *NewRelicProcessor) handleMonitoring() {
 				return
 			}
 
-			appVertex.Notices = make([]structure.VNotice, 0)
 			fetchedMetrics := nrp.relicWorker.CollectApplicationHostMetrics(
 				appVertex.SystemDetails.(AppDetails).ID,
 				appVertex.SystemDetails.(AppDetails).RelicMetrics,
@@ -184,6 +207,14 @@ func (nrp *NewRelicProcessor) handleMonitoring() {
 				hostVertex.Notices = make([]structure.VNotice, 0)
 				hostVertex.Updated = time.Now().UnixNano()
 				hostVertex.MaxVolume = float64(host.Metrics.Normal + host.Metrics.Warning + host.Metrics.Danger)
+
+				if appEdge.Class == structure.VDanger {
+					if nrp.sound.SendSoundAlert != nil {
+						nrp.sound.Lock()
+						nrp.sound.SendSoundAlert()
+						nrp.sound.Unlock()
+					}
+				}
 
 				if isNeedToNotice, notice := assembly.GetHealthNotice(appEdge.Class); isNeedToNotice {
 					appVertex.Notices = append(hostVertex.Notices, notice)
