@@ -1,0 +1,19 @@
+sudo: false
+
+language: go
+
+go:
+  - 1.10.x
+
+before_script:
+  - make prepare
+  - make js
+
+script:
+  - make golint
+  - make gotest
+
+cache:
+  directories:
+    - vendor
+    - node_modules

@@ -38,6 +38,7 @@ plugin_sound:
 ## Install project dependencies
 prepare:
 	go get -u golang.org/x/lint/golint
+	go get -u github.com/golang/dep/cmd/dep
 	go get -u github.com/go-bindata/go-bindata/...
 	go get github.com/elazarl/go-bindata-assetfs/...
 	npm install
