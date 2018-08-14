@@ -2,8 +2,6 @@
 
 ##### !!! Compile only on Linux, the issue with Go Plugins !!!
 
-## TODO Table of content
-
 ### Project structure
 ```text
 . BitAccretion
@@ -64,6 +62,9 @@ func NewProcessor() core.IProcessor {
 ```
 
 Anyway, as for example, you can take already implemented plugins.
+
+P.S. If you will compile sound plugin then install dependency for `libsamplerate`.
+Example: ```sudo apt install libsamplerate0```
 
 ## Configuration
 There is a config file `config.json`.

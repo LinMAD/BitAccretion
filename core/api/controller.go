@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"github.com/LinMAD/BitAccretion/core/assembly"
 	"github.com/gorilla/websocket"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"time"
@@ -34,26 +33,8 @@ func (c *controller) getTrafficData(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	isFile := false // Use that if need to debug json (it will write and read form json file)
 	w.Header().Set("Content-Type", "application/json")
-
-	if isFile == false {
-		fmt.Fprintf(w, "%s", string(assembly.WriteToJSON(c.api.storage.Get(GraphStorageKey))))
-	} else {
-		var jByte []byte
-		var err error
-
-		////Write to json
-		//path := filepath.Clean(c.api.webPath + "/resources/debug_data.json")
-		//assembly.WriteJSONToFile(path, c.api.storage.Get(GraphStorageKey))
-
-		// Read from json
-		if jByte, err = ioutil.ReadFile(c.api.webPath + "/resources/debug_data.json"); err != nil {
-			log.Printf("%s %v", tagController, err.Error())
-		}
-
-		fmt.Fprintf(w, "%s", string(jByte))
-	}
+	fmt.Fprintf(w, "%s", string(assembly.WriteToJSON(c.api.storage.Get(GraphStorageKey))))
 }
 
 func (c *controller) getTrafficDataViaWebSocket(w http.ResponseWriter, r *http.Request) {
