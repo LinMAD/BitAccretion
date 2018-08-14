@@ -2,6 +2,8 @@
 
 ##### !!! Compile only on Linux, the issue with Go Plugins !!!
 
+[![Build Status](https://travis-ci.org/LinMAD/BitAccretion.svg?branch=master)](https://travis-ci.org/LinMAD/BitAccretion)
+
 ### Project structure
 ```text
 . BitAccretion
