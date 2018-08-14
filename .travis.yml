@@ -12,3 +12,8 @@ before_script:
 script:
   - make golint
   - make gotest
+
+cache:
+  directories:
+    - vendor
+    - node_modules
