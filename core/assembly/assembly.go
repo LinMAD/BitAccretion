@@ -150,7 +150,7 @@ func GetMetricHealth(sensitivity HealthSensitivity, appMetrics structure.VMetric
 	// Define node health by metrics
 	if appMetrics.Danger > sensitivity.Danger {
 		return structure.VDanger
-	} else if appMetrics.Warning > sensitivity.Warning || appMetrics.Danger > 0 {
+	} else if appMetrics.Warning > sensitivity.Warning || appMetrics.Danger > sensitivity.Warning {
 		return structure.VWarning
 	} else {
 		return structure.VNormal
