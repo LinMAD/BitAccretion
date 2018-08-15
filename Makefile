@@ -17,13 +17,12 @@ js: clean
 
 ## Clean compiled react build
 clean:
-	npm run clean
+	rm -rf public && mkdir public
 
 ## Build application
 build: js
 	rm -rf build && mkdir build
 	go build -o BitAccretion main.go && mv BitAccretion build/.
-	cp config.json build/.
 
 ## Compile new relic processor
 plugin_relic:
@@ -39,7 +38,7 @@ plugin_sound:
 prepare:
 	go get -u golang.org/x/lint/golint
 	go get -u github.com/golang/dep/cmd/dep
-	go get -u github.com/go-bindata/go-bindata/...
+	go get github.com/jteeuwen/go-bindata/...
 	go get github.com/elazarl/go-bindata-assetfs/...
 	npm install
 	dep ensure

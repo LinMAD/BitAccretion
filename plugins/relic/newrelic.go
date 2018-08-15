@@ -121,7 +121,7 @@ func (nrp *NewRelicProcessor) Prepare() {
 
 	// Load miscellaneous plugin to alerting by sound
 	if nrp.Config.EnabledSoundAlert {
-		mod, err := plugin.Open("sound.so")
+		mod, err := plugin.Open("./sound.so")
 		if err != nil {
 			return
 		}
@@ -130,6 +130,8 @@ func (nrp *NewRelicProcessor) Prepare() {
 		if err != nil {
 			return
 		}
+
+		log.Printf("%s: Sound plugin loaded", nrTag)
 
 		nrp.sound.SendSoundAlert = SendSoundAlert.(func())
 	}
@@ -211,6 +213,7 @@ func (nrp *NewRelicProcessor) handleMonitoring() {
 				if appEdge.Class == structure.VDanger {
 					if nrp.sound.SendSoundAlert != nil {
 						nrp.sound.Lock()
+						log.Printf("%s: ----- Send sound alert -----", nrTag)
 						nrp.sound.SendSoundAlert()
 						nrp.sound.Unlock()
 					}

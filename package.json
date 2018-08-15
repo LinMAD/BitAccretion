@@ -1,16 +1,18 @@
 {
   "scripts": {
-    "clean": "rimraf public && mkdirp public",
     "lint": "make golint",
     "copy:fonts": "cpx \"./node_modules/source-sans-pro/**/*\" ./public/fonts",
-    "build": "npm-run-all clean --parallel copy:* && webpack --mode production --display-error-details",
+    "build": "npm-run-all --parallel copy:* && webpack --mode production --display-error-details",
     "test": "make gotest",
     "validate": "npm ls"
   },
   "engines": {
     "node": "~4.4.0"
   },
+  "license": "Apache-2.0",
   "dependencies": {
+    "@tweenjs/tween.js": "^16.6",
+    "ajv": "^6.5.2",
     "bootstrap": "^3.3.7",
     "flux": "^3.1.0",
     "hammerjs": "^2.0.8",
@@ -27,7 +29,6 @@
     "react-virtualized": "^8.2.0",
     "source-sans-pro": "^2.0.10",
     "superagent": "^3.0.0",
-    "tween.js": "^16.3.5",
     "vizceral-react": "^4.5.*",
     "webfontloader": "^1.6.26"
   },

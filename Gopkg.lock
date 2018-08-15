@@ -10,14 +10,6 @@
   version = "v1.1.0"
 
 [[projects]]
-  digest = "1:f4f6279cb37479954644babd8f8ef00584ff9fa63555d2c6718c1c3517170202"
-  name = "github.com/elazarl/go-bindata-assetfs"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "30f82fa23fd844bd5bb1e5f216db87fd77b5eb43"
-  version = "v1.0.0"
-
-[[projects]]
   branch = "master"
   digest = "1:344f31a7140a6fc871f2f3fd82451516ac375540ab3df65e9ee9c17fed5c0d3a"
   name = "github.com/faiface/beep"
@@ -162,7 +154,6 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
-    "github.com/elazarl/go-bindata-assetfs",
     "github.com/faiface/beep",
     "github.com/faiface/beep/speaker",
     "github.com/faiface/beep/wav",

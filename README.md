@@ -1,7 +1,5 @@
 ## BitAccretion
 
-##### !!! Compile only on Linux, the issue with Go Plugins !!!
-
 [![Build Status](https://travis-ci.org/LinMAD/BitAccretion.svg?branch=master)](https://travis-ci.org/LinMAD/BitAccretion)
 
 ### Project structure
@@ -17,6 +15,19 @@
 ```
 
 ### How to prepare to develop or compile
+Easy - use docker or install all OS dependencies manually, but...
+##### !!! Compile only on Linux, the issue with Go Plugins on others OS !!!
+
+Docker:
+- First, build docker image where you will build all code.
+- Second, compile all needed parts like: `js, go plugins and go app`
+
+Example with docker
+```text
+$: docker build . -t bitaccretion:latest
+$: docker run --volume `pwd`:/go/src/github.com/LinMAD/BitAccretion --name bit_build --rm -it bitaccretion:latest /bin/sh
+```
+
 To install project dependencies run:
 ```text
 $: make prepare
@@ -40,11 +51,12 @@ Example how executing the build
 $: make build
 ```
 
-Example of compiled folder:
+Compiled folder can be look like that:
 ```text
 ├── BitAccretion
 ├── config.json
 ├── processor.so
+├── resources
 └── sound.so
 ```
 
@@ -101,3 +113,8 @@ There is a config file `config.json`.
   ]
 }
 ```
+
+TODO List
+--------------
+ - Add flag to disable\enable logs
+ - Return error to main loop (No fatal, panic in plugins and core)
