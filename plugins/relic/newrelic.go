@@ -210,13 +210,11 @@ func (nrp *NewRelicProcessor) handleMonitoring() {
 				hostVertex.Updated = time.Now().UnixNano()
 				hostVertex.MaxVolume = float64(host.Metrics.Normal + host.Metrics.Warning + host.Metrics.Danger)
 
-				if appEdge.Class == structure.VDanger {
-					if nrp.sound.SendSoundAlert != nil {
-						nrp.sound.Lock()
-						log.Printf("%s: ----- Send sound alert -----", nrTag)
-						nrp.sound.SendSoundAlert()
-						nrp.sound.Unlock()
-					}
+				if appEdge.Class == structure.VDanger && nrp.sound.SendSoundAlert != nil {
+					nrp.sound.Lock()
+					log.Printf("%s: ----- Send sound alert -----", nrTag)
+					nrp.sound.SendSoundAlert()
+					nrp.sound.Unlock()
 				}
 
 				if isNeedToNotice, notice := assembly.GetHealthNotice(appEdge.Class); isNeedToNotice {

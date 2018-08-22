@@ -4,11 +4,11 @@ import (
 	"github.com/faiface/beep"
 	"github.com/faiface/beep/speaker"
 	"github.com/faiface/beep/wav"
+	"io/ioutil"
 	"log"
+	"math/rand"
 	"os"
 	"time"
-	"math/rand"
-	"io/ioutil"
 )
 
 const (
@@ -31,7 +31,6 @@ func SendSoundAlert() {
 
 	playAlert(wd + alarmPath)
 	playVoice(wd + voicePath)
-
 
 	return
 }

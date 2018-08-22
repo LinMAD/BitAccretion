@@ -26,12 +26,20 @@
 
 
 [[constraint]]
+  name = "github.com/elazarl/go-bindata-assetfs"
+  version = "1.0.0"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/faiface/beep"
+
+[[constraint]]
   name = "github.com/gorilla/mux"
   version = "1.6.2"
 
 [[constraint]]
   name = "github.com/gorilla/websocket"
-  version = "1.2.0"
+  version = "1.3.0"
 
 [[constraint]]
   name = "github.com/stretchr/testify"
