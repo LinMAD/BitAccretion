@@ -12,7 +12,9 @@ before_script:
 script:
   - make golint
   - make gotest
-  - go build
+  - make build
+  - make plugin_relic
+  - make plugin_sound
 
 cache:
   directories:

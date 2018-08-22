@@ -13,6 +13,7 @@ gotest:
 ## Prepare for development work-flow react app
 js: clean
 	npm run build
+	mkdir -p build/resources
 	mv -f public/* build/resources
 
 ## Clean compiled react build
