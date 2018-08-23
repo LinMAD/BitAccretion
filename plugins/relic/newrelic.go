@@ -29,7 +29,9 @@ type NewRelicProcessor struct {
 
 // safeSoundAlert is safe to play sound concurrently
 type safeSoundAlert struct {
-	SendSoundAlert func()
+	SendSoundAlert  func()
+	IsAlertNeeded   bool
+	LastTriggerTime time.Time
 	sync.Mutex
 }
 
@@ -149,7 +151,7 @@ func (nrp *NewRelicProcessor) Run() {
 
 	go func() {
 		defer wg.Done()
-		for range time.Tick(20 * time.Second) {
+		for range time.Tick(30 * time.Second) {
 			nrp.handleMonitoring()
 			return
 		}
@@ -210,10 +212,9 @@ func (nrp *NewRelicProcessor) handleMonitoring() {
 				hostVertex.Updated = time.Now().UnixNano()
 				hostVertex.MaxVolume = float64(host.Metrics.Normal + host.Metrics.Warning + host.Metrics.Danger)
 
-				if appEdge.Class == structure.VDanger && nrp.sound.SendSoundAlert != nil {
+				if appEdge.Class == structure.VDanger {
 					nrp.sound.Lock()
-					log.Printf("%s: ----- Send sound alert -----", nrTag)
-					nrp.sound.SendSoundAlert()
+					nrp.sound.IsAlertNeeded = true
 					nrp.sound.Unlock()
 				}
 
@@ -233,4 +234,17 @@ func (nrp *NewRelicProcessor) handleMonitoring() {
 	wg.Wait()
 
 	nrp.vRegionGraph = assembly.ConvertToVizceral(nrp.graph, nrp.Config.HealthSensitivity)
+
+	// Make some noise if needed
+	if nrp.sound.SendSoundAlert != nil && nrp.sound.IsAlertNeeded {
+		now := time.Now().UTC()
+		passedTime := now.Sub(nrp.sound.LastTriggerTime)
+
+		if passedTime >= 3*time.Minute {
+			log.Printf("%s: ----- Send sound alert -----", nrTag)
+			nrp.sound.SendSoundAlert()
+			nrp.sound.IsAlertNeeded = false
+			nrp.sound.LastTriggerTime = now
+		}
+	}
 }
