@@ -162,7 +162,6 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
-    "github.com/elazarl/go-bindata-assetfs",
     "github.com/faiface/beep",
     "github.com/faiface/beep/speaker",
     "github.com/faiface/beep/wav",

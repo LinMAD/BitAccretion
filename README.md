@@ -38,7 +38,7 @@ To prepare static data like: JS, CSS, HTML
 ```text
 $: make js
 ```
-It compiles React to static files and creates bind data to serve it via HTTP.
+It compiles React to static files.
 
 Example how to compile the plugin
 ```text

@@ -14,7 +14,7 @@ gotest:
 js: clean
 	npm run build
 	mkdir -p build/resources
-	mv -f public/* build/resources
+	cp -rl  public/* build/resources
 
 ## Clean compiled react build
 clean:
