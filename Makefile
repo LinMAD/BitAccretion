@@ -13,7 +13,8 @@ gotest:
 ## Prepare for development work-flow react app
 js: clean
 	npm run build
-	go-bindata-assetfs -pkg api -o core/api/static_bin_data.go public/...
+	mkdir -p build/resources
+	cp -rl  public/* build/resources
 
 ## Clean compiled react build
 clean:
@@ -38,7 +39,5 @@ plugin_sound:
 prepare:
 	go get -u golang.org/x/lint/golint
 	go get -u github.com/golang/dep/cmd/dep
-	go get github.com/jteeuwen/go-bindata/...
-	go get github.com/elazarl/go-bindata-assetfs/...
 	npm install
 	dep ensure

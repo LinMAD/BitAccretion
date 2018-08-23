@@ -34,7 +34,6 @@ func (api *API) ServeAllRoutes(isServeStatic bool) {
 	api.router.HandleFunc("/ws", api.controller.getTrafficDataViaWebSocket).Name("web_socket")
 	api.router.HandleFunc("/api/traffic/data", api.controller.getTrafficData).Name("traffic_data")
 	if isServeStatic {
-		// assetFS magical function of bind-data
-		api.router.PathPrefix("/").Handler(http.FileServer(assetFS())).Name("static")
+		api.router.PathPrefix("/").Handler(http.FileServer(http.Dir(api.webPath + "/resources")))
 	}
 }

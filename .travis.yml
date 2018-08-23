@@ -7,11 +7,11 @@ go:
 
 before_script:
   - make prepare
-  - make js
-
-script:
   - make golint
   - make gotest
+
+script:
+  - make build
 
 cache:
   directories:
