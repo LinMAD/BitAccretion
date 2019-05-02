@@ -2,87 +2,99 @@
 
 
 [[projects]]
+  digest = "1:ffe9824d294da03b391f44e1ae8281281b4afc1bdaa9588c9097785e3af10cec"
   name = "github.com/davecgh/go-spew"
   packages = ["spew"]
+  pruneopts = "UT"
   revision = "8991bc29aa16c548c550c7ff78260e27b9ab7c73"
   version = "v1.1.1"
 
 [[projects]]
-  name = "github.com/elazarl/go-bindata-assetfs"
-  packages = ["."]
-  revision = "30f82fa23fd844bd5bb1e5f216db87fd77b5eb43"
-  version = "v1.0.0"
-
-[[projects]]
   branch = "master"
+  digest = "1:e1c6332cdc9290612b29fca7cf17834b94f29e636f9bab288abb51afd0b58fad"
   name = "github.com/faiface/beep"
   packages = [
     ".",
     "speaker",
-    "wav"
+    "wav",
   ]
-  revision = "63cc6fbbac46dba1a03e55f0ebc965d6c82ca8e1"
+  pruneopts = "UT"
+  revision = "e59a7440241ac37c8debc0c36d69a6a489850a1f"
 
 [[projects]]
   branch = "master"
+  digest = "1:f14d1b50e0075fb00177f12a96dd7addf93d1e2883c25befd17285b779549795"
   name = "github.com/gopherjs/gopherjs"
   packages = ["js"]
-  revision = "89baedc74dd74098df0c4ba8792e3cf6d722d4d0"
+  pruneopts = "UT"
+  revision = "3e4dfb77656c424b6d1196a4d5fed0fcf63677cc"
 
 [[projects]]
+  digest = "1:94f6a77a051b8e2c6e8c280ce298dcd1028ed345f2209e630cdc606d59767f97"
   name = "github.com/gopherjs/gopherwasm"
   packages = ["js"]
-  revision = "f02b5938d19774383abccdfe0271e1a40651b4ad"
-  version = "v0.1.1"
+  pruneopts = "UT"
+  revision = "f5a54963d451109f20622db5b6a055569ec6b4c6"
+  version = "v1.1.0"
 
 [[projects]]
-  name = "github.com/gorilla/context"
-  packages = ["."]
-  revision = "08b5f424b9271eedf6f9f0ce86cb9396ed337a42"
-  version = "v1.1.1"
-
-[[projects]]
+  digest = "1:d5f97fc268267ec1b61c3453058c738246fc3e746f14b1ae25161513b7367b0c"
   name = "github.com/gorilla/mux"
   packages = ["."]
-  revision = "e3702bed27f0d39777b0b37b664b6280e8ef8fbf"
-  version = "v1.6.2"
+  pruneopts = "UT"
+  revision = "c5c6c98bc25355028a63748a498942a6398ccd22"
+  version = "v1.7.1"
 
 [[projects]]
+  digest = "1:7b5c6e2eeaa9ae5907c391a91c132abfd5c9e8a784a341b5625e750c67e6825d"
   name = "github.com/gorilla/websocket"
   packages = ["."]
-  revision = "3ff3320c2a1756a3691521efc290b4701575147c"
-  version = "v1.3.0"
+  pruneopts = "UT"
+  revision = "66b9c49e59c6c48f0ffce28c2d8b8a5678502c6d"
+  version = "v1.4.0"
 
 [[projects]]
+  digest = "1:063882eea39d6c8fb8a80d3acea94b0d0e9115d8b8ecf5e011fb0ef12e307d81"
   name = "github.com/hajimehoshi/oto"
-  packages = ["."]
-  revision = "f48c4541b748ac0a09e8d207588ecc890ca47615"
-  version = "v0.1.2"
+  packages = [
+    ".",
+    "internal/mux",
+  ]
+  pruneopts = "UT"
+  revision = "ea42285388c25364e85ee5808f5ef9e6b5045584"
+  version = "v0.3.3"
 
 [[projects]]
+  digest = "1:cf31692c14422fa27c83a05292eb5cbe0fb2775972e8f1f8446a71549bd8980b"
   name = "github.com/pkg/errors"
   packages = ["."]
-  revision = "645ef00459ed84a119197bfb8d8205042c6df63d"
-  version = "v0.8.0"
+  pruneopts = "UT"
+  revision = "ba968bfe8b2f7e042a574c888954fccecfa385b4"
+  version = "v0.8.1"
 
 [[projects]]
+  digest = "1:0028cb19b2e4c3112225cd871870f2d9cf49b9b4276531f03438a88e94be86fe"
   name = "github.com/pmezard/go-difflib"
   packages = ["difflib"]
+  pruneopts = "UT"
   revision = "792786c7400a136282c1664665ae0a8db921c6c2"
   version = "v1.0.0"
 
 [[projects]]
+  digest = "1:8ff03ccc603abb0d7cce94d34b613f5f6251a9e1931eba1a3f9888a9029b055c"
   name = "github.com/stretchr/testify"
   packages = [
     "assert",
     "require",
-    "suite"
+    "suite",
   ]
-  revision = "f35b8ab0b5a2cef36673838d662e249dd9c94686"
-  version = "v1.2.2"
+  pruneopts = "UT"
+  revision = "ffdc059bfe9ce6a4e144ba849dbedead332c6053"
+  version = "v1.3.0"
 
 [[projects]]
   branch = "master"
+  digest = "1:1fa913eaf7819f7babafdd7b6f46ec6a9cd65c6ac8d8c645a608787577309a6f"
   name = "golang.org/x/exp"
   packages = [
     "shiny/driver/gldriver",
@@ -92,18 +104,22 @@
     "shiny/driver/internal/lifecycler",
     "shiny/driver/internal/win32",
     "shiny/driver/internal/x11key",
-    "shiny/screen"
+    "shiny/screen",
   ]
-  revision = "3d87b88a115fa4e65fadcbf34e6a60e8040cec41"
+  pruneopts = "UT"
+  revision = "475c5042d3f1a54a7b90cb8b1efb6697946e1107"
 
 [[projects]]
   branch = "master"
+  digest = "1:b92d5f74778f4766055011db9abc4bba54edbe5e690a544e6dbfe4dd90824719"
   name = "golang.org/x/image"
   packages = ["math/f64"]
-  revision = "c73c2afc3b812cdd6385de5a50616511c4a3d458"
+  pruneopts = "UT"
+  revision = "6d32002ffd7577f23673706728e1c510698cecb1"
 
 [[projects]]
   branch = "master"
+  digest = "1:eede0a3b9f8c6b6c0f26dc90933adf9162978d65461ceecebfb9e454164c02e0"
   name = "golang.org/x/mobile"
   packages = [
     "app",
@@ -116,19 +132,30 @@
     "event/touch",
     "geom",
     "gl",
-    "internal/mobileinit"
+    "internal/mobileinit",
   ]
-  revision = "bceb7ef27cc623473a5b664d2a3450576dddff0f"
+  pruneopts = "UT"
+  revision = "3e0bab5405d63a8f5dd9d9764a24c8e5ac4997fa"
 
 [[projects]]
   branch = "master"
+  digest = "1:1fa5ea43bbafccb9bc8a02ab2fa85eefc1eda9c9b14fe0cefa4d7baf505c9469"
   name = "golang.org/x/sys"
   packages = ["windows"]
-  revision = "3b58ed4ad3395d483fc92d5d14123ce2c3581fec"
+  pruneopts = "UT"
+  revision = "d89cdac9e8725f2aefce25fcbfef41134c9ad412"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "5dbae34df0f183d36353c8cd677608b998b4151e673ba3c8bf583cebe16ad6b2"
+  input-imports = [
+    "github.com/faiface/beep",
+    "github.com/faiface/beep/speaker",
+    "github.com/faiface/beep/wav",
+    "github.com/gorilla/mux",
+    "github.com/gorilla/websocket",
+    "github.com/stretchr/testify/assert",
+    "github.com/stretchr/testify/suite",
+  ]
   solver-name = "gps-cdcl"
   solver-version = 1

@@ -45,8 +45,6 @@ Temporary Items
 .apdisk
 
 ### Go
-vendor
-.vendor-new
 v8-compile-cache*
 core/api/static_bin_data.go
 # Binaries for programs and plugins
