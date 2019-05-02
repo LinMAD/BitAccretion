@@ -25,6 +25,9 @@ clean:
 build: js
 	go build -o BitAccretion main.go && mv BitAccretion build/.
 
+## Build all parts
+build_full: js build plugin_relic plugin_sound
+
 ## Compile new relic processor
 plugin_relic:
 	rm -rf build/processor.so
