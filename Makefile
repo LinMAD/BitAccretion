@@ -18,22 +18,23 @@ js: clean
 
 ## Clean compiled react build
 clean:
+	rm -rf build && mkdir build
 	rm -rf public && mkdir public
 
 ## Build application
 build: js
-	rm -rf build && mkdir build
 	go build -o BitAccretion main.go && mv BitAccretion build/.
 
 ## Compile new relic processor
 plugin_relic:
+	rm -rf build/processor.so
 	go build -buildmode=plugin -o ./build/processor.so plugins/relic/newrelic.go
 
 ## Compile new relic processor
 plugin_sound:
-	go build -buildmode=plugin -o ./build/sound.so plugins/misc/sound.go
-	rm -rf build/resources/sound && mkdir -p build/resources/sound
+	rm -rf build/resources/sound && rm -rf build/sound.so && mkdir -p build/resources/sound
 	cp -r resources/sound build/resources
+	go build -buildmode=plugin -o ./build/sound.so plugins/misc/sound.go
 
 ## Install project dependencies
 prepare:
