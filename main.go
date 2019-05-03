@@ -16,7 +16,7 @@ const (
 	// AppName human name
 	AppName = "BitAccretion"
 	// AppVersion human version id
-	AppVersion = "0.5"
+	AppVersion = "0.7"
 	tag        = "MAIN"
 )
 

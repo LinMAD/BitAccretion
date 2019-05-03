@@ -24,7 +24,7 @@ type controller struct {
 var socketUpgrader = websocket.Upgrader{
 	ReadBufferSize:    1024,
 	WriteBufferSize:   1024,
-	EnableCompression: true,
+	EnableCompression: false, // https://github.com/gorilla/websocket/issues/203 unexpected byte fatal
 }
 
 func (c *controller) getTrafficData(w http.ResponseWriter, r *http.Request) {

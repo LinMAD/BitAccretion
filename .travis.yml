@@ -11,7 +11,8 @@ before_script:
   - make gotest
 
 script:
-  - make build
+  - make js
+  - make com_core
 
 cache:
   directories:

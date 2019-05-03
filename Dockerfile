@@ -1,6 +1,6 @@
 FROM golang:1.10-alpine
 
-LABEL description="BitAccretion - dockerized container for compiling"
+LABEL description="Dockercontainer for compiling in mac or win"
 
 # Create working paths
 RUN mkdir -p /go/src/github.com/LinMAD/BitAccretion
