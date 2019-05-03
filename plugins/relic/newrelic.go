@@ -134,6 +134,7 @@ func (nrp *NewRelicProcessor) Prepare() {
 
 		log.Printf("%s: Sound plugin loaded", nrTag)
 
+		nrp.sound.IsAlertNeeded = make(chan bool, 1)
 		nrp.sound.SendSoundAlert = SendSoundAlert.(func())
 	}
 }
@@ -145,7 +146,6 @@ func (nrp *NewRelicProcessor) GetLastAppGraph() structure.VRegionGraph {
 
 // Run implementation of core.IProcessor
 func (nrp *NewRelicProcessor) Run() {
-
 	go nrp.handleSoundAlert()
 
 	var wg sync.WaitGroup
@@ -215,7 +215,9 @@ func (nrp *NewRelicProcessor) handleMonitoring() {
 				hostVertex.MaxVolume = float64(host.Metrics.Normal + host.Metrics.Warning + host.Metrics.Danger)
 
 				if appEdge.Class == structure.VDanger {
-					nrp.sound.IsAlertNeeded <- true
+					go func() {
+						nrp.sound.IsAlertNeeded <- true
+					}()
 				}
 
 				if isNeedToNotice, notice := assembly.GetHealthNotice(appEdge.Class); isNeedToNotice {
@@ -236,9 +238,13 @@ func (nrp *NewRelicProcessor) handleMonitoring() {
 	nrp.vRegionGraph = assembly.ConvertToVizceral(nrp.graph, nrp.Config.HealthSensitivity)
 }
 
+// handleSoundAlert for noise making
 func (nrp *NewRelicProcessor) handleSoundAlert() {
-	// Make some noise if needed
-	if nrp.sound.SendSoundAlert != nil && <- nrp.sound.IsAlertNeeded {
+	if nrp.sound.SendSoundAlert == nil {
+		return
+	}
+
+	if <-nrp.sound.IsAlertNeeded {
 		now := time.Now().UTC()
 		passedTime := now.Sub(nrp.sound.LastTriggerTime)
 
