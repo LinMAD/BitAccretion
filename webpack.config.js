@@ -54,7 +54,7 @@ module.exports = {
             __HIDE_DATA__: !!process.env.HIDE_DATA
         }),
         new HtmlWebpackPlugin({
-            title: 'BitAccretion Boozt',
+            title: 'BitAccretion - vizceral',
             template: './resources/index.html',
             favicon: './resources/favicon.ico',
             inject: true

@@ -21,12 +21,12 @@ clean:
 	rm -rf build && mkdir build
 	rm -rf public && mkdir public
 
-## Build application
-build: js
+## Build go code
+build_go: plugin_relic plugin_sound
 	go build -o BitAccretion main.go && mv BitAccretion build/.
 
 ## Build all parts
-build_full: js build plugin_relic plugin_sound
+build_full: js build_go plugin_relic plugin_sound
 
 ## Compile new relic processor
 plugin_relic:

@@ -30,13 +30,6 @@ body {
 
 /* Custom page CSS
 -------------------------------------------------- */
-@media screen and (max-width: 1000px) {
-    .container {
-        padding-right:0 !important;
-        padding-left:0 !important;
-        max-width: initial !important;
-    }
-}
 
 body > .container {
     position: absolute;
