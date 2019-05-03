@@ -14,6 +14,7 @@ gotest:
 clean:
 	rm -rf build && mkdir build
 	rm -rf public && mkdir public
+	mkdir -p build/resources
 
 ## Install project dependencies
 prepare:
@@ -25,24 +26,21 @@ prepare:
 ## Prepare for development work-flow react app
 js: clean
 	npm run build
-	mkdir -p build/resources
 	cp -rl  public/* build/resources
+	rm -rf public
 
 ## Compile core go app
 com_core:
-	mkdir build
 	go build -o BitAccretion main.go && mv BitAccretion build/.
 
 ## Compile new relic processor
 com_plugin_relic:
 	rm -rf build/processor.so
-	mkdir build
 	go build -buildmode=plugin -o ./build/processor.so plugins/relic/newrelic.go
 
 ## Compile new relic processor
 com_plugin_sound:
 	rm -rf build/resources/sound && rm -rf build/sound.so && mkdir -p build/resources/sound
-	mkdir -p build/resources
 	cp -r resources/sound build/resources
 	go build -buildmode=plugin -o ./build/sound.so plugins/misc/sound.go
 
