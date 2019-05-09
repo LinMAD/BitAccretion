@@ -1,8 +1,10 @@
 {
+  "survey_time": 1,
   "web_port": "8080",
-  "api_key": "123456789987654321",
+  "api_key": "your_key_if_needed",
+  "enabled_sound_alert": false,
   "health_sensitivity": {
     "danger": 10,
     "warning": 0
-  }
+  },
 }

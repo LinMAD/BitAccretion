@@ -87,11 +87,13 @@ Example: ```sudo apt install libsamplerate0```
 ## Configuration
 There is a config file `config.json`.
 
-```json
+```text
 {
+  "survey_time": 1,                // In seconds
   "web_port": "8080",
-  "api_key": "your_key_if_needed",
-  "health_sensitivity": {
+  "api_key": "your_key_if_needed", // Depending on plugin what must be surveyed
+  "enabled_sound_alert": false,
+  "health_sensitivity": {          // Settings of conversion rate, to mark warning, alert node
     "danger": 10,
     "warning": 0
   },

@@ -40,6 +40,7 @@ type NRConfig struct {
 	APPSets           []APPSet                   `json:"app_sets"`
 	HealthSensitivity assembly.HealthSensitivity `json:"health_sensitivity"`
 	EnabledSoundAlert bool                       `json:"enabled_sound_alert"`
+	SurveyTime        int                        `json:"survey_time"`
 }
 
 // APPSet registered in New Relic
@@ -148,18 +149,9 @@ func (nrp *NewRelicProcessor) GetLastAppGraph() structure.VRegionGraph {
 func (nrp *NewRelicProcessor) Run() {
 	go nrp.handleSoundAlert()
 
-	var wg sync.WaitGroup
-	wg.Add(1)
-
-	go func() {
-		defer wg.Done()
-		for range time.Tick(30 * time.Second) {
-			nrp.handleMonitoring()
-			return
-		}
-	}()
-
-	wg.Wait()
+	for range time.Tick(time.Duration(nrp.Config.SurveyTime) * time.Millisecond) {
+		nrp.handleMonitoring()
+	}
 
 	return
 }

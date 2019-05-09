@@ -36,8 +36,9 @@ type appKernel struct {
 
 // Config contains configuration of application
 type Config struct {
-	GUI  bool   `json:"gui_monitoring"`
-	Port string `json:"web_port"`
+	GUI        bool   `json:"gui_monitoring"`
+	Port       string `json:"web_port"`
+	SurveyTime int    `json:"survey_time"`
 }
 
 // kernel stores main dependencies and configuration
@@ -65,7 +66,7 @@ func init() {
 
 	// Create API and inject router engine
 	kernel.router = mux.NewRouter()
-	api.NewAPI(kernel.router, kernel.CacheManager, kernel.webRoot).ServeAllRoutes(true)
+	api.NewAPI(kernel.router, kernel.CacheManager, kernel.webRoot, kernel.config.SurveyTime).ServeAllRoutes(true)
 
 	// Load processor plugin
 	mod, err := plugin.Open(wd + "/processor.so")

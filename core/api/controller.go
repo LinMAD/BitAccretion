@@ -53,20 +53,30 @@ func (c *controller) getTrafficDataViaWebSocket(w http.ResponseWriter, r *http.R
 			return
 		}
 
-		time.Sleep(30 * time.Second) // Make delay for response
+		// Make delay between responses
+		time.Sleep(time.Duration(c.api.surveyDelay) * time.Millisecond)
 
 		if string(msg) == "get_traffic" {
 			buf := new(bytes.Buffer)
 			data := assembly.WriteToJSON(c.api.storage.Get(GraphStorageKey))
 
-			binary.Write(buf, binary.LittleEndian, data)
+			err = binary.Write(buf, binary.LittleEndian, data)
+			if err != nil {
+				log.Printf("%s %v", tagController, err.Error())
+				return
+			}
+
 			err = conn.WriteMessage(websocket.BinaryMessage, buf.Bytes())
 			if err != nil {
 				log.Println(err)
 				return
 			}
 		} else {
-			conn.Close()
+			err = conn.Close()
+			if err != nil {
+				log.Fatalf("%s: Unable to close client err %s", tagController, err.Error())
+			}
+
 			log.Printf("%s: Client desconnected from web socket", tagController)
 			return
 		}
