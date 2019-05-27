@@ -2,12 +2,14 @@ package model
 
 import "sync"
 
+
 type (
 	// VertexName represents name of vertex
 	VertexName string
 
 	// Graph of all infrastructure
 	Graph struct {
+		// TODO Refactor maps to slices cos Node will have name
 		// Contains application vertex
 		vertices map[VertexName]Node
 		// Contains application vertex connection
@@ -18,9 +20,18 @@ type (
 
 	// Node a container of value in graph
 	Node struct {
-		value interface{}
+		// TODO Make private
+		Name  string
+		health string
+		RequestCount float64
+		ErrorCount float64
+		metadata interface{}
 	}
 )
+
+func (n Node) GetName() string {
+	return n.Name
+}
 
 // NewGraph of with n nodes and edges
 func NewGraph() *Graph {

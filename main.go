@@ -1,4 +1,4 @@
-// Copyright 2018 Google Inc.
+// Copyright 2019 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,68 +12,33 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Binary sparklinedemo displays a couple of SparkLine widgets.
+// Binary donutdemo displays a couple of Donut widgets.
 // Exist when 'q' is pressed.
 package main
 
 import (
 	"context"
-	"math/rand"
+	"github.com/LinMAD/BitAccretion/dashboard"
+	"github.com/LinMAD/BitAccretion/model"
+	"github.com/mum4k/termdash/linestyle"
+	"github.com/mum4k/termdash/widgets/text"
 	"time"
 
 	"github.com/mum4k/termdash"
 	"github.com/mum4k/termdash/cell"
 	"github.com/mum4k/termdash/container"
-	"github.com/mum4k/termdash/linestyle"
 	"github.com/mum4k/termdash/terminal/termbox"
 	"github.com/mum4k/termdash/terminal/terminalapi"
-	"github.com/mum4k/termdash/widgets/sparkline"
+	"github.com/mum4k/termdash/widgets/donut"
 )
 
-// playSparkLine continuously adds values to the SparkLine, once every delay.
-// Exits when the context expires.
-func playSparkLine(ctx context.Context, sl *sparkline.SparkLine, delay time.Duration) {
-	const max = 100
+// playType indicates how to play a donut.
+type playType int
 
-	ticker := time.NewTicker(delay)
-	defer ticker.Stop()
-	for {
-		select {
-		case <-ticker.C:
-			v := int(rand.Int31n(max + 1))
-			if err := sl.Add([]int{v}); err != nil {
-				panic(err)
-			}
-
-		case <-ctx.Done():
-			return
-		}
-	}
-}
-
-// fillSparkLine continuously fills the SparkLine up to its capacity with
-// random values.
-func fillSparkLine(ctx context.Context, sl *sparkline.SparkLine, delay time.Duration) {
-	const max = 100
-
-	ticker := time.NewTicker(delay)
-	defer ticker.Stop()
-	for {
-		select {
-		case <-ticker.C:
-			var values []int
-			for i := 0; i < sl.ValueCapacity(); i++ {
-				values = append(values, int(rand.Int31n(max+1)))
-			}
-			if err := sl.Add(values); err != nil {
-				panic(err)
-			}
-
-		case <-ctx.Done():
-			return
-		}
-	}
-}
+const (
+	playTypePercent playType = iota
+	playTypeAbsolute
+)
 
 func main() {
 	t, err := termbox.New()
@@ -84,77 +49,59 @@ func main() {
 
 	ctx, cancel := context.WithCancel(context.Background())
 
-	blue, err := sparkline.New(
-		sparkline.Label("Green SparkLine", cell.FgColor(cell.ColorBlue)),
-		sparkline.Color(cell.ColorBlue),
+	yellow, err := donut.New(
+		donut.CellOpts(cell.FgColor(cell.ColorBlue)),
+		donut.Label("System C", cell.FgColor(cell.ColorYellow)),
 	)
+	yellow.Percent(100)
 	if err != nil {
 		panic(err)
 	}
-	go playSparkLine(ctx, blue, 250*time.Millisecond)
 
-	green, err := sparkline.New(
-		sparkline.Label("Green SparkLine", cell.FgColor(cell.ColorBlue)),
-		sparkline.Color(cell.ColorGreen),
-	)
-	if err != nil {
-		panic(err)
+	nodes := make([]model.Node, 4)
+	nodes[0] = model.Node{
+		Name:         "System 0",
+		RequestCount: 101,
+		ErrorCount:   232,
 	}
-	go playSparkLine(ctx, green, 250*time.Millisecond)
+	nodes[1] = model.Node{
+		Name:         "System 1",
+		RequestCount: 1102,
+		ErrorCount:   104,
+	}
+	nodes[2] = model.Node{
+		Name:         "System 2",
+		RequestCount: 10,
+		ErrorCount:   1,
+	}
+	nodes[3] = model.Node{
+		Name:         "System 3",
+		RequestCount: 2,
+		ErrorCount:   0,
+	}
 
-	red, err := sparkline.New(
-		sparkline.Label("Red SparkLine", cell.FgColor(cell.ColorBlue)),
-		sparkline.Color(cell.ColorRed),
-	)
-	if err != nil {
-		panic(err)
+	left, e := dashboard.CreateLeftLayout(nodes)
+	if e != nil {
+		panic(e)
 	}
-	go playSparkLine(ctx, red, 500*time.Millisecond)
-
-	yellow, err := sparkline.New(
-		sparkline.Label("Yellow SparkLine", cell.FgColor(cell.ColorGreen)),
-		sparkline.Color(cell.ColorYellow),
-	)
-	if err != nil {
-		panic(err)
-	}
-	go fillSparkLine(ctx, yellow, 1*time.Second)
 
 	c, err := container.New(
 		t,
 		container.Border(linestyle.Light),
 		container.BorderTitle("PRESS Q TO QUIT"),
 		container.SplitVertical(
-			container.Left(
-				container.Border(linestyle.Light),
-				container.PlaceWidget(yellow),
-			),
+			left,
+			// TODO Add right
 			container.Right(
+				container.Border(linestyle.Light),
 				container.SplitHorizontal(
 					container.Top(
-						container.SplitHorizontal(
-							container.Top(
-								container.Border(linestyle.Light),
-								container.PlaceWidget(blue),
-							),
-							container.Bottom(
-								container.Border(linestyle.Light),
-								container.PlaceWidget(yellow),
-							),
-						),
+						container.Border(linestyle.Light),
+						EventLogWidget(),
 					),
 					container.Bottom(
-						container.SplitVertical(
-							container.Left(
-								container.Border(linestyle.Light),
-								container.PlaceWidget(red),
-							),
-							container.Right(
-								container.Border(linestyle.Light),
-								container.PlaceWidget(green),
-							),
-						),
-					),
+						container.Border(linestyle.Light),
+						container.PlaceWidget(yellow)),
 				),
 			),
 		),
@@ -169,7 +116,28 @@ func main() {
 		}
 	}
 
-	if err := termdash.Run(ctx, t, c, termdash.KeyboardSubscriber(quitter)); err != nil {
+	if err := termdash.Run(ctx, t, c, termdash.KeyboardSubscriber(quitter), termdash.RedrawInterval(1*time.Second)); err != nil {
 		panic(err)
 	}
+}
+
+func EventLogWidget() container.Option {
+	wrapped, err := text.New(text.WrapAtRunes())
+	if err != nil {
+		panic(err)
+	}
+	if err := wrapped.Write("2019:09:14 12:50| Error in system B \n", text.WriteCellOpts(cell.FgColor(cell.ColorRed))); err != nil {
+		panic(err)
+	}
+	if err := wrapped.Write("2019:09:14 12:51| Error in system B \n", text.WriteCellOpts(cell.FgColor(cell.ColorRed))); err != nil {
+		panic(err)
+	}
+	if err := wrapped.Write("2019:09:14 12:52| Error in system B \n", text.WriteCellOpts(cell.FgColor(cell.ColorRed))); err != nil {
+		panic(err)
+	}
+	if err := wrapped.Write("2019:09:14 12:53| Error in system C \n", text.WriteCellOpts(cell.FgColor(cell.ColorRed))); err != nil {
+		panic(err)
+	}
+
+	return container.PlaceWidget(wrapped)
 }

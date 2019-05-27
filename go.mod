@@ -1,4 +1,4 @@
-module github.com/LinMAD/BitAccretion/v1
+module github.com/LinMAD/BitAccretion
 
 go 1.12
 
