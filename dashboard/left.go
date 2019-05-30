@@ -1,117 +1,97 @@
 package dashboard
 
 import (
-	"fmt"
 	"github.com/LinMAD/BitAccretion/model"
 	"github.com/mum4k/termdash/cell"
 	"github.com/mum4k/termdash/container"
-	"github.com/mum4k/termdash/container/grid"
 	"github.com/mum4k/termdash/linestyle"
 	"github.com/mum4k/termdash/widgetapi"
-	"github.com/mum4k/termdash/widgets/linechart"
-	"math"
+	"github.com/mum4k/termdash/widgets/barchart"
+	"math/rand"
+	"time"
 )
 
 func CreateLeftLayout(systems []model.Node) (container.LeftOption, error) {
-	var leftGrid container.LeftOption
-	sysCount := len(systems)
+	sysBar, sysBarErr := createSystemBar(systems)
+	if sysBarErr != nil {
+		return nil, sysBarErr
+	}
 
-	widgetsList := make([][]container.Option, 0)
+	leftLayout := container.Left(
+		container.Border(linestyle.Round),
+		container.BorderTitle("Requests to systems"),
+		container.PlaceWidget(sysBar),
+	)
+
+	return leftLayout, nil
+}
+
+func createSystemBar(systems []model.Node) (widgetapi.Widget, error) {
+	barWidth := 0
+	sysCount := len(systems)
+	sysNames := make([]string, sysCount)
+	sysBarColors := make([]cell.Color, sysCount)
+	sysValBarColors := make([]cell.Color, sysCount)
 
 	for i := 0; i < sysCount; i++ {
-		widgetOptions := make([]container.Option, 0)
-		w, wErr := generateWidgets(systems[i])
-		if wErr != nil {
-			return nil, wErr
+		sysNames[i] = systems[i].Name
+
+		switch systems[i].Health {
+		case model.Warning:
+			sysBarColors[i] = cell.ColorYellow
+			sysValBarColors[i] = cell.ColorBlack
+		case model.Critical:
+			sysBarColors[i] = cell.ColorRed
+			sysValBarColors[i] = cell.ColorBlack
+		default:
+			sysBarColors[i] = cell.ColorBlue
+			sysValBarColors[i] = cell.ColorBlack
 		}
 
-		widgetOptions = append(widgetOptions, w...)
-		widgetsList = append(widgetsList, widgetOptions)
+		if barWidth < len(systems[i].Name) {
+			barWidth = len(systems[i].Name)
+		}
 	}
 
-	leftGrid = container.Left(
-		container.SplitHorizontal(
-			container.Top(widgetsList[0]...),
-			container.Bottom(widgetsList[1]...),
-		),
+	sysBar, sysBarErr := barchart.New(
+		barchart.BarColors(sysBarColors),
+		barchart.ValueColors(sysValBarColors),
+		barchart.ShowValues(),
+		barchart.Labels(sysNames),
 	)
+	if sysBarErr != nil {
+		return nil, sysBarErr
+	}
 
-	return leftGrid, nil
+	go playBarChart(sysBar, systems, 1 * time.Second)
+	
+	return sysBar, nil
 }
 
-func generateWidgets(system model.Node) ([]container.Option, error) {
-	builder := grid.New()
-	el, elErr := createSystemElement(system)
-	if elErr != nil {
-		return nil, elErr
+func playBarChart(bc *barchart.BarChart, systems []model.Node, delay time.Duration) {
+	sysMaxValue := 0
+
+	for i := 0; i < len(systems); i++ {
+		if sysMaxValue < systems[i].RequestCount {
+			sysMaxValue = systems[i].RequestCount
+		}
 	}
 
-	builder.Add(
-		grid.ColWidthPerc(
-			99,
-			grid.Widget(
-				el,
-				container.BorderTitle(system.Name),
-				container.Border(linestyle.Light),
-			),
-		),
-	)
 
-	gridOpts, builderErr := builder.Build()
-	if builderErr != nil {
-		return nil, fmt.Errorf("dashboard.Build => %v", builderErr)
+	ticker := time.NewTicker(delay)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-ticker.C:
+			var values []int
+			for i := 0; i < len(systems); i++ {
+				values = append(values, int(rand.Int31n(int32(sysMaxValue))))
+			}
+
+			if err := bc.Values(values, sysMaxValue); err != nil {
+				panic(err)
+			}
+		}
 	}
-
-	return gridOpts, nil
 }
 
-func fakeStory(current float64) []float64 {
-	var res []float64
-
-	for i := 0; i < 100; i++ {
-		v := math.Sin(float64(i) / 100 * math.Pi)
-		res = append(res, v)
-	}
-
-	res = append(res, current)
-
-	return res
-}
-
-func createSystemElement(sysNode model.Node) (widgetapi.Widget, error) {
-	lc, err := linechart.New(
-		linechart.AxesCellOpts(cell.FgColor(cell.ColorRed)),
-		linechart.YLabelCellOpts(cell.FgColor(cell.ColorGreen)),
-		linechart.XLabelCellOpts(cell.FgColor(cell.ColorCyan)),
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	successLineErr := lc.Series(
-		sysNode.Name,
-		fakeStory(sysNode.RequestCount),
-		linechart.SeriesCellOpts(cell.FgColor(cell.ColorGreen)),
-		linechart.SeriesXLabels(map[int]string{
-			0: "No requests",
-		}),
-	)
-	if successLineErr != nil {
-		return nil, successLineErr
-	}
-
-	errLineErr := lc.Series(
-		sysNode.Name,
-		fakeStory(sysNode.ErrorCount),
-		linechart.SeriesCellOpts(cell.FgColor(cell.ColorRed)),
-		linechart.SeriesXLabels(map[int]string{
-			0: "No errors",
-		}),
-	)
-
-	if errLineErr != nil {
-		return nil, successLineErr
-	}
-
-	return lc, nil
-}

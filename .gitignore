@@ -77,3 +77,6 @@ node_modules
 # Project and app
 config.json
 build
+
+# Data stubs
+data_stub.go

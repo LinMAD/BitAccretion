@@ -2,7 +2,6 @@ package model
 
 import "sync"
 
-
 type (
 	// VertexName represents name of vertex
 	VertexName string
@@ -21,11 +20,11 @@ type (
 	// Node a container of value in graph
 	Node struct {
 		// TODO Make private
-		Name  string
-		health string
-		RequestCount float64
-		ErrorCount float64
-		metadata interface{}
+		Name         string
+		Health       HealthState
+		RequestCount int
+		ErrorCount   int
+		metadata     interface{}
 	}
 )
 

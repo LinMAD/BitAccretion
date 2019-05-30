@@ -25,7 +25,7 @@ func TestRunGraphTestSuite(t *testing.T) {
 
 func (t *GraphTestSuite) TestVertexEdgeRelation() {
 	var edges map[VertexName]Node
-	testNode := Node{value: nil}
+	testNode := Node{}
 
 	t.graph.AddEdge("beta", "theta", testNode)
 	t.graph.AddEdge("theta", "kilo", testNode)
