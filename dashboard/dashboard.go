@@ -12,7 +12,7 @@ import (
 
 // MonitoringDashboard
 type MonitoringDashboard struct {
-	observer          event.IWidgetObserver
+	observer          event.IObserver
 	TerminalContainer *container.Container
 }
 
@@ -42,7 +42,7 @@ func NewMonitoringDashboard(t terminalapi.Terminal) (*MonitoringDashboard, error
 	}
 
 	// Register widgets
-	termDash.observer.RegisterSubscriber(barWidget)
+	termDash.observer.RegisterNewSubscriber(barWidget)
 
 	// TODO Spilt method to layout construct (left and right)
 

@@ -56,9 +56,6 @@ BitAccretion*
 *.so
 *.dylib
 
-build
-core/api/static_bin_data.go
-
 # Test binary, build with `go test -c`
 *.test
 
@@ -76,7 +73,3 @@ node_modules
 
 # Project and app
 config.json
-build
-
-# Data stubs
-data_stub.go

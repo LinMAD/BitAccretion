@@ -50,6 +50,7 @@ func NewBarChart(name string, nodes []model.Node) (*BarchartWidgetHandler, error
 	sysBarColors := make([]cell.Color, sysCount)
 	sysValBarColors := make([]cell.Color, sysCount)
 
+	// TODO Think is it really need to color on new health, if so must be done in event (Is it possible in API?)
 	for i := 0; i < sysCount; i++ {
 		sysNames[i] = nodes[i].Name
 

@@ -4,51 +4,49 @@ import (
 	"github.com/LinMAD/BitAccretion/model"
 )
 
-// TODO Fix interface naming (they not attached to widgets any more)
-
 type (
 	UpdateEvent struct {
 		// MonitoringGraph represents a structure for dashboard
 		MonitoringGraph model.Graph
 	}
 
-	// IWidgetSubscriber represent basic interface to update dashboard on event
-	IWidgetSubscriber interface {
+	// ISubscriber represent basic interface to update dashboard on event
+	ISubscriber interface {
 		// HandleNotifyEvent allows to publish update in subscriber
 		HandleNotifyEvent(UpdateEvent)
 		// GetName returns name of subscriber
 		GetName() string
 	}
 
-	// IWidgetObserver represents implementation to update dashboard widgets
-	IWidgetObserver interface {
-		// RegisterSubscriber widget observer
-		RegisterSubscriber(IWidgetSubscriber)
+	// IObserver represents implementation to update dashboard widgets
+	IObserver interface {
+		// RegisterNewSubscriber widget observer
+		RegisterNewSubscriber(ISubscriber)
 		// NotifySubscribers publishes new events to listeners\subscribers
 		NotifySubscribers(UpdateEvent)
 	}
 
-	// widgetObserver must be used to deliver updates to different subscribed widgets
-	widgetObserver struct {
-		widgetSubscribers []IWidgetSubscriber
+	// observer must be used to deliver updates to different subscribed widgets
+	observer struct {
+		subscribers []ISubscriber
 	}
 )
 
 // NewDashboardObserver returns new instance of observer for widgets
-func NewDashboardObserver() IWidgetObserver {
-	return &widgetObserver{
-		widgetSubscribers: make([]IWidgetSubscriber, 0),
+func NewDashboardObserver() IObserver {
+	return &observer{
+		subscribers: make([]ISubscriber, 0),
 	}
 }
 
-// RegisterSubscriber to observer
-func (wn *widgetObserver) RegisterSubscriber(wo IWidgetSubscriber) {
-	wn.widgetSubscribers = append(wn.widgetSubscribers, wo)
+// RegisterNewSubscriber to observer
+func (wn *observer) RegisterNewSubscriber(wo ISubscriber) {
+	wn.subscribers = append(wn.subscribers, wo)
 }
 
 // NotifySubscribers all subscribers
-func (wn *widgetObserver) NotifySubscribers(event UpdateEvent) {
-	for _, o := range wn.widgetSubscribers {
+func (wn *observer) NotifySubscribers(event UpdateEvent) {
+	for _, o := range wn.subscribers {
 		o.HandleNotifyEvent(event)
 	}
 }

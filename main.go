@@ -30,7 +30,7 @@ func main() {
 	}
 
 	monitoringObserver := event.NewDashboardObserver()
-	monitoringObserver.RegisterSubscriber(monitoringDashboard)
+	monitoringObserver.RegisterNewSubscriber(monitoringDashboard)
 
 	quitter := func(k *terminalapi.Keyboard) {
 		if k.Key == 'q' || k.Key == 'Q' {
@@ -38,7 +38,8 @@ func main() {
 		}
 	}
 
-	go playMonitoring(monitoringObserver, 1 * time.Second)
+	// TODO Replace that
+	go playMonitoring(monitoringObserver, 1*time.Second)
 
 	runErr := termdash.Run(
 		ctx,
@@ -53,7 +54,7 @@ func main() {
 }
 
 // TODO Remove stub and make with channels
-func playMonitoring(monitoringObserver event.IWidgetObserver, delay time.Duration) []model.Node {
+func playMonitoring(monitoringObserver event.IObserver, delay time.Duration) []model.Node {
 	nodes := stub.GetStubNodes()
 
 	ticker := time.NewTicker(delay)
