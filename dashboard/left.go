@@ -63,8 +63,8 @@ func createSystemBar(systems []model.Node) (widgetapi.Widget, error) {
 		return nil, sysBarErr
 	}
 
-	go playBarChart(sysBar, systems, 1 * time.Second)
-	
+	go playBarChart(sysBar, systems, 1*time.Second)
+
 	return sysBar, nil
 }
 
@@ -72,11 +72,10 @@ func playBarChart(bc *barchart.BarChart, systems []model.Node, delay time.Durati
 	sysMaxValue := 0
 
 	for i := 0; i < len(systems); i++ {
-		if sysMaxValue < systems[i].RequestCount {
-			sysMaxValue = systems[i].RequestCount
+		if sysMaxValue < systems[i].Metric.RequestCount {
+			sysMaxValue = systems[i].Metric.RequestCount
 		}
 	}
-
 
 	ticker := time.NewTicker(delay)
 	defer ticker.Stop()
@@ -94,4 +93,3 @@ func playBarChart(bc *barchart.BarChart, systems []model.Node, delay time.Durati
 		}
 	}
 }
-

@@ -19,18 +19,16 @@ type (
 
 	// Node a container of value in graph
 	Node struct {
-		// TODO Make private
-		Name         string
-		Health       HealthState
-		RequestCount int
-		ErrorCount   int
-		metadata     interface{}
+		// Name of node
+		Name string
+		// Health represents state of node (depending on domain logic)
+		Health HealthState
+		// Metrics of system
+		Metric SystemMetric
+		// MetaData of node
+		MetaData SystemMetaData
 	}
 )
-
-func (n Node) GetName() string {
-	return n.Name
-}
 
 // NewGraph of with n nodes and edges
 func NewGraph() *Graph {
