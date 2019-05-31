@@ -5,6 +5,7 @@ import (
 )
 
 type (
+	// UpdateEvent general event structure of subscribers
 	UpdateEvent struct {
 		// MonitoringGraph represents a structure for dashboard
 		MonitoringGraph model.Graph

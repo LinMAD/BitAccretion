@@ -5,6 +5,7 @@ import (
 	"math/rand"
 )
 
+// GetStubNodes generated dummy data
 func GetStubNodes() []model.Node {
 	sysNames := []string{
 		"Lipstick", "Steward",
@@ -39,5 +40,5 @@ func getRandomHealthState() model.HealthState {
 		}
 	}
 
-	return model.Normal
+	return model.HealthNormal
 }

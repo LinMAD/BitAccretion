@@ -8,7 +8,7 @@ import (
 	"math/rand"
 )
 
-// BarchartWidgetHandler
+// BarchartWidgetHandler for dashboard, shows in bars requests of each system in node
 type BarchartWidgetHandler struct {
 	name     string
 	barChart *barchart.BarChart
@@ -55,15 +55,15 @@ func NewBarChart(name string, nodes []model.Node) (*BarchartWidgetHandler, error
 		sysNames[i] = nodes[i].Name
 
 		switch nodes[i].Health {
-		case model.Warning:
+		case model.HealthWarning:
 			sysBarColors[i] = cell.ColorYellow
-			sysValBarColors[i] = cell.ColorBlack
-		case model.Critical:
+			sysValBarColors[i] = cell.ColorWhite
+		case model.HealthCritical:
 			sysBarColors[i] = cell.ColorRed
-			sysValBarColors[i] = cell.ColorBlack
+			sysValBarColors[i] = cell.ColorWhite
 		default:
 			sysBarColors[i] = cell.ColorBlue
-			sysValBarColors[i] = cell.ColorBlack
+			sysValBarColors[i] = cell.ColorWhite
 		}
 
 		if barWidth < len(nodes[i].Name) {

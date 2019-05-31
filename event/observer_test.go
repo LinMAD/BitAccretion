@@ -29,11 +29,11 @@ func (s *testObserverSubscriber) GetName() string {
 
 func TestObserverSubscriber(t *testing.T) {
 	ob := NewDashboardObserver()
-	RegisterSubscriber(&testObserverSubscriber{
+	ob.RegisterNewSubscriber(&testObserverSubscriber{
 		name: testSubscriberName,
 	})
 
-	NotifySubscribers(UpdateEvent{})
+	ob.NotifySubscribers(UpdateEvent{})
 	if !testSubscriberNotified || !testSubscriberValid {
 		t.FailNow()
 	}

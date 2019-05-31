@@ -10,7 +10,7 @@ import (
 	"github.com/mum4k/termdash/widgets/text"
 )
 
-// MonitoringDashboard
+// MonitoringDashboard core dashboard structure with constructed widgets
 type MonitoringDashboard struct {
 	observer          event.IObserver
 	TerminalContainer *container.Container
@@ -21,7 +21,7 @@ func (m MonitoringDashboard) HandleNotifyEvent(e event.UpdateEvent) {
 	m.observer.NotifySubscribers(e)
 }
 
-// GetName
+// GetName of subscriber
 func (m MonitoringDashboard) GetName() string {
 	return "MonitoringDashboard"
 }
@@ -62,7 +62,7 @@ func NewMonitoringDashboard(t terminalapi.Terminal) (*MonitoringDashboard, error
 				container.SplitHorizontal(
 					container.Top(
 						container.Border(linestyle.Light),
-						EventLogWidget(),
+						stubEventLogWidget(),
 					),
 					container.Bottom(
 						container.Border(linestyle.Light),
@@ -77,21 +77,22 @@ func NewMonitoringDashboard(t terminalapi.Terminal) (*MonitoringDashboard, error
 	return termDash, err
 }
 
-func EventLogWidget() container.Option {
+// TODO Remove that stub
+func stubEventLogWidget() container.Option {
 	wrapped, err := text.New(text.WrapAtRunes())
 	if err != nil {
 		panic(err)
 	}
-	if err := wrapped.Write("|2019:09:14 12:50| Error in CSEye\n", text.WriteCellOpts(cell.FgColor(cell.ColorRed))); err != nil {
+	if err := wrapped.Write("|2019:09:14 12:50| Error in Name 1\n", text.WriteCellOpts(cell.FgColor(cell.ColorRed))); err != nil {
 		panic(err)
 	}
-	if err := wrapped.Write("|2019:09:14 12:51| Error in CSEye\n", text.WriteCellOpts(cell.FgColor(cell.ColorRed))); err != nil {
+	if err := wrapped.Write("|2019:09:14 12:51| Error in Name 1\n", text.WriteCellOpts(cell.FgColor(cell.ColorRed))); err != nil {
 		panic(err)
 	}
-	if err := wrapped.Write("|2019:09:14 12:52| Error in CSEye\n", text.WriteCellOpts(cell.FgColor(cell.ColorRed))); err != nil {
+	if err := wrapped.Write("|2019:09:14 12:52| Error in Name 1\n", text.WriteCellOpts(cell.FgColor(cell.ColorRed))); err != nil {
 		panic(err)
 	}
-	if err := wrapped.Write("|2019:09:14 12:53| Error in Fastlane\n", text.WriteCellOpts(cell.FgColor(cell.ColorRed))); err != nil {
+	if err := wrapped.Write("|2019:09:14 12:53| Error in Name 2\n", text.WriteCellOpts(cell.FgColor(cell.ColorRed))); err != nil {
 		panic(err)
 	}
 
