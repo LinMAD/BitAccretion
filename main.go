@@ -23,8 +23,7 @@ func main() {
 
 	// TODO Use same context to cancel all widgets subscribers
 	ctx, cancel := context.WithCancel(context.Background())
-
-	monitoringDashboard, err := dashboard.NewMonitoringDashboard(t)
+	monitoringDashboard, err := dashboard.NewMonitoringDashboard("BitAccretion", t)
 	if err != nil {
 		panic(err)
 	}
@@ -65,7 +64,7 @@ func playMonitoring(monitoringObserver event.IObserver, delay time.Duration) []m
 			graph := model.NewGraph()
 			for i := 0; i < len(nodes); i++ {
 				nodes[i].Metric.RequestCount = rand.Intn(15000)
-				nodes[i].Metric.ErrorCount = rand.Intn(200)
+				nodes[i].Metric.ErrorCount = rand.Intn(15000)
 
 				graph.AddVertex(model.VertexName(nodes[i].Name), nodes[i])
 			}

@@ -5,10 +5,9 @@ import (
 	"github.com/LinMAD/BitAccretion/model"
 	"github.com/mum4k/termdash/cell"
 	"github.com/mum4k/termdash/widgets/barchart"
-	"math/rand"
 )
 
-// BarchartWidgetHandler for dashboard, shows in bars requests of each system in node
+// BarchartWidgetHandler for dashboard
 type BarchartWidgetHandler struct {
 	name     string
 	barChart *barchart.BarChart
@@ -16,23 +15,17 @@ type BarchartWidgetHandler struct {
 
 // HandleNotifyEvent update bar chat data
 func (barWidget *BarchartWidgetHandler) HandleNotifyEvent(e event.UpdateEvent) {
-	maxReqVal := 0
-	allNodes := e.MonitoringGraph.GetAllVertices()
-	lenNodes := len(allNodes)
+	max := getMaxRequestValue(&e.MonitoringGraph)
+	vertices := e.MonitoringGraph.GetAllVertices()
+	l := len(vertices)
 
-	for i := 0; i < lenNodes; i++ {
-		if maxReqVal < allNodes[i].Metric.RequestCount {
-			maxReqVal = allNodes[i].Metric.RequestCount
-		}
-	}
-
-	var barData []int // TODO Try allocate space of slice
-	for i := 0; i < lenNodes; i++ {
-		barData = append(barData, int(rand.Int31n(int32(maxReqVal))))
+	data := make([]int, l)
+	for i := 0; i < l; i++ {
+		data[i] = vertices[i].Metric.RequestCount
 	}
 
 	// Add values to bar barChart and put max value of it
-	if err := barWidget.barChart.Values(barData, maxReqVal); err != nil {
+	if err := barWidget.barChart.Values(data, max); err != nil {
 		panic(err) // TODO Handle in grace way, log or ignore
 	}
 }
@@ -42,7 +35,7 @@ func (barWidget *BarchartWidgetHandler) GetName() string {
 	return barWidget.name
 }
 
-// NewBarChart creates and returns prepared dashboard widget
+// NewBarChart creates and returns prepared widget
 func NewBarChart(name string, nodes []model.Node) (*BarchartWidgetHandler, error) {
 	barWidth := 0
 	sysCount := len(nodes)

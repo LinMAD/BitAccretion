@@ -27,13 +27,20 @@ func (m MonitoringDashboard) GetName() string {
 }
 
 // NewMonitoringDashboard with constructed widgets
-func NewMonitoringDashboard(t terminalapi.Terminal) (*MonitoringDashboard, error) {
+func NewMonitoringDashboard(dashboardName string, t terminalapi.Terminal) (*MonitoringDashboard, error) {
 	// TODO Split method to widgets init
 
+	// TODO Add factory of charts
 	// Init widgets
 	barWidget, barWidgetErr := NewBarChart("BarChartWidget", stub.GetStubNodes())
 	if barWidgetErr != nil {
 		return nil, barWidgetErr
+	}
+	aggSparkSuccessReq, aggSparkSuccessReqErr := NewSparkLineChart(
+		cell.ColorGreen, "Success", stub.GetStubNodes(),
+	)
+	if aggSparkSuccessReqErr != nil {
+		return nil, aggSparkSuccessReqErr
 	}
 
 	// Create dashboard observer
@@ -43,31 +50,32 @@ func NewMonitoringDashboard(t terminalapi.Terminal) (*MonitoringDashboard, error
 
 	// Register widgets
 	termDash.observer.RegisterNewSubscriber(barWidget)
+	termDash.observer.RegisterNewSubscriber(aggSparkSuccessReq)
 
 	// TODO Spilt method to layout construct (left and right)
-
-	leftLayout := container.Left(
-		container.Border(linestyle.Round),
-		container.BorderTitle("Requests to systems"),
-		container.PlaceWidget(barWidget.barChart),
-	)
 
 	c, err := container.New(
 		t,
 		container.Border(linestyle.Light),
-		container.BorderTitle("PRESS Q TO QUIT"),
-		container.SplitVertical(
-			leftLayout,
-			container.Right(
-				container.SplitHorizontal(
-					container.Top(
+		container.BorderTitle(dashboardName),
+		container.SplitHorizontal(
+			container.Top(
+				container.SplitVertical(
+					container.Left(
 						container.Border(linestyle.Light),
 						stubEventLogWidget(),
 					),
-					container.Bottom(
+					container.Right(
 						container.Border(linestyle.Light),
+						container.BorderTitle("Aggregated requests"),
+						container.PlaceWidget(aggSparkSuccessReq.lc),
 					),
 				),
+			),
+			container.Bottom(
+				container.Border(linestyle.Round),
+				container.BorderTitle("Requests to systems"),
+				container.PlaceWidget(barWidget.barChart),
 			),
 		),
 	)
