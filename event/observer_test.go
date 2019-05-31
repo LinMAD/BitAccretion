@@ -1,13 +1,14 @@
-package dashboard
+package event
 
 import (
 	"testing"
 )
 
 const testSubscriberName = "test_sub"
+
 var (
 	testSubscriberNotified = false
-	testSubscriberValid = false
+	testSubscriberValid    = false
 )
 
 type testObserverSubscriber struct {
@@ -28,11 +29,11 @@ func (s *testObserverSubscriber) GetName() string {
 
 func TestObserverSubscriber(t *testing.T) {
 	ob := NewDashboardObserver()
-	ob.RegisterSubscriber(&testObserverSubscriber{
+	RegisterSubscriber(&testObserverSubscriber{
 		name: testSubscriberName,
 	})
 
-	ob.NotifySubscribers(UpdateEvent{})
+	NotifySubscribers(UpdateEvent{})
 	if !testSubscriberNotified || !testSubscriberValid {
 		t.FailNow()
 	}

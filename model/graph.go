@@ -83,6 +83,22 @@ func (g *Graph) GetAllVerticesLabels() (names []VertexName) {
 	return names
 }
 
+// GetAllVertices of graph
+func (g *Graph) GetAllVertices() (vertices []Node) {
+	vertices = make([]Node, len(g.vertices))
+
+	g.lock.RLock()
+	defer g.lock.RUnlock()
+
+	var i int
+	for _, v := range g.vertices {
+		vertices[i] = v
+		i++
+	}
+
+	return vertices
+}
+
 // GetVertexEdges returns all related edges
 func (g *Graph) GetVertexEdges(vl VertexName) map[VertexName]Node {
 	return g.edges[vl]

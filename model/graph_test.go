@@ -57,13 +57,7 @@ type testAppGraph struct {
 	NestedApp []testAppGraph
 }
 
-func (t *GraphTestSuite) TestGraphStructure() {
-	appNamesList := map[string]bool{
-		"Alfa": false, "Bravo": false,
-		"Charlie": false, "Delta": false, "Echo": false,
-		"Foxtrot": false,
-	}
-
+func graphProvider(g *Graph) (size int) {
 	layer3 := make([]testAppGraph, 2)
 	layer3[0] = testAppGraph{
 		Name: "Echo",
@@ -93,7 +87,17 @@ func (t *GraphTestSuite) TestGraphStructure() {
 		NestedApp: layer,
 	}
 
-	infraLoaderHelper(infraConfig, t.graph)
+	infraLoaderHelper(infraConfig, g)
+}
+
+func (t *GraphTestSuite) TestGraphStructure() {
+	appNamesList := map[string]bool{
+		"Alfa": false, "Bravo": false,
+		"Charlie": false, "Delta": false,
+		"Echo": false, "Foxtrot": false,
+	}
+
+	graphProvider(t.graph)
 
 	// Validate
 	vertices := t.graph.GetAllVerticesLabels()
@@ -115,6 +119,13 @@ func (t *GraphTestSuite) TestGraphStructure() {
 	if _, ok := deltaEdge["Foxtrot"]; !ok {
 		assert.Failf(t.T(), "Expected to be found next edge from `Delta` to `Foxtrot`", "Edge `Foxtrot` not found")
 	}
+}
+
+func (t *GraphTestSuite) TestGetAllVertices() {
+	size := graphProvider(t.graph)
+	vertices := t.graph.GetAllVertices()
+
+	assert.Len(t.T(), vertices, size)
 }
 
 func infraLoaderHelper(infra testAppGraph, graph *Graph) {

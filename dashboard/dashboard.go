@@ -1,6 +1,8 @@
 package dashboard
 
 import (
+	"github.com/LinMAD/BitAccretion/event"
+	"github.com/LinMAD/BitAccretion/stub"
 	"github.com/mum4k/termdash/cell"
 	"github.com/mum4k/termdash/container"
 	"github.com/mum4k/termdash/linestyle"
@@ -8,18 +10,54 @@ import (
 	"github.com/mum4k/termdash/widgets/text"
 )
 
-func NewDashboardContainer(t terminalapi.Terminal) (*container.Container, error) {
-	left, e := CreateLeftLayout(GetStubNodes())
-	if e != nil {
-		panic(e)
+// MonitoringDashboard
+type MonitoringDashboard struct {
+	observer          event.IWidgetObserver
+	TerminalContainer *container.Container
+}
+
+// HandleNotifyEvent send update to monitoring dashboard
+func (m MonitoringDashboard) HandleNotifyEvent(e event.UpdateEvent) {
+	m.observer.NotifySubscribers(e)
+}
+
+// GetName
+func (m MonitoringDashboard) GetName() string {
+	return "MonitoringDashboard"
+}
+
+// NewMonitoringDashboard with constructed widgets
+func NewMonitoringDashboard(t terminalapi.Terminal) (*MonitoringDashboard, error) {
+	// TODO Split method to widgets init
+
+	// Init widgets
+	barWidget, barWidgetErr := NewBarChart("BarChartWidget", stub.GetStubNodes())
+	if barWidgetErr != nil {
+		return nil, barWidgetErr
 	}
+
+	// Create dashboard observer
+	termDash := &MonitoringDashboard{
+		observer: event.NewDashboardObserver(),
+	}
+
+	// Register widgets
+	termDash.observer.RegisterSubscriber(barWidget)
+
+	// TODO Spilt method to layout construct (left and right)
+
+	leftLayout := container.Left(
+		container.Border(linestyle.Round),
+		container.BorderTitle("Requests to systems"),
+		container.PlaceWidget(barWidget.barChart),
+	)
 
 	c, err := container.New(
 		t,
 		container.Border(linestyle.Light),
 		container.BorderTitle("PRESS Q TO QUIT"),
 		container.SplitVertical(
-			left,
+			leftLayout,
 			container.Right(
 				container.SplitHorizontal(
 					container.Top(
@@ -34,7 +72,9 @@ func NewDashboardContainer(t terminalapi.Terminal) (*container.Container, error)
 		),
 	)
 
-	return c, err
+	termDash.TerminalContainer = c
+
+	return termDash, err
 }
 
 func EventLogWidget() container.Option {

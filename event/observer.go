@@ -1,8 +1,10 @@
-package dashboard
+package event
 
 import (
 	"github.com/LinMAD/BitAccretion/model"
 )
+
+// TODO Fix interface naming (they not attached to widgets any more)
 
 type (
 	UpdateEvent struct {
@@ -18,8 +20,8 @@ type (
 		GetName() string
 	}
 
-	// IWidgetNotifier represents implementation to update dashboard widgets
-	IWidgetNotifier interface {
+	// IWidgetObserver represents implementation to update dashboard widgets
+	IWidgetObserver interface {
 		// RegisterSubscriber widget observer
 		RegisterSubscriber(IWidgetSubscriber)
 		// NotifySubscribers publishes new events to listeners\subscribers
@@ -33,7 +35,7 @@ type (
 )
 
 // NewDashboardObserver returns new instance of observer for widgets
-func NewDashboardObserver() *widgetObserver {
+func NewDashboardObserver() IWidgetObserver {
 	return &widgetObserver{
 		widgetSubscribers: make([]IWidgetSubscriber, 0),
 	}
