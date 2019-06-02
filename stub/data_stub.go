@@ -19,9 +19,9 @@ func GetStubNodes() []model.Node {
 	nodes := make([]model.Node, len(sysNames))
 	for i := 0; i < len(sysNames); i++ {
 		nodes[i] = model.Node{
-			Name:     sysNames[i],
-			Health:   getRandomHealthState(),
-			Metric:   model.SystemMetric{
+			Name:   sysNames[i],
+			Health: getRandomHealthState(),
+			Metric: model.SystemMetric{
 				RequestCount: rand.Intn(1000),
 				ErrorCount:   rand.Intn(1000),
 			},

@@ -125,7 +125,7 @@ func (t *GraphTestSuite) TestGetAllVertices() {
 	graphProvider(t.graph)
 	vertices := t.graph.GetAllVertices()
 
-	assert.NotZero(t.T(), vertices, )
+	assert.NotZero(t.T(), vertices)
 }
 
 func infraLoaderHelper(infra testAppGraph, graph *Graph) {

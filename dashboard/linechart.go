@@ -12,14 +12,14 @@ const maxPoints = 50
 
 // SparkLineWidgetHandler for dashboard
 type SparkLineWidgetHandler struct {
-	name     string
-	lc *linechart.LineChart
+	name  string
+	lc    *linechart.LineChart
 	lines seriesData
 }
 
 // seriesData used to draw points in line chart
 type seriesData struct {
-	okData []float64
+	okData  []float64
 	badData []float64
 }
 
@@ -72,7 +72,7 @@ func (s *SparkLineWidgetHandler) updateLineData(g *model.Graph) {
 	}
 
 	s.lines.okData = append(okPoints, okPoint)
-	s.lines.badData =  append(badPoints, badPoint)
+	s.lines.badData = append(badPoints, badPoint)
 }
 
 // NewSparkLineChart creates and returns prepared widget
@@ -87,9 +87,9 @@ func NewSparkLineChart(name string) (*SparkLineWidgetHandler, error) {
 	}
 
 	widget := &SparkLineWidgetHandler{
-		name:     name,
-		lc: lc,
-		lines:seriesData{
+		name: name,
+		lc:   lc,
+		lines: seriesData{
 			okData:  make([]float64, 0),
 			badData: make([]float64, 0),
 		},

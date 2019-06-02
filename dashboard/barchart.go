@@ -9,9 +9,9 @@ import (
 
 // BarchartWidgetHandler for dashboard
 type BarchartWidgetHandler struct {
-	name     string
+	name                  string
 	isOkRequestsToCollect bool
-	barChart *barchart.BarChart
+	barChart              *barchart.BarChart
 }
 
 // HandleNotifyEvent update bar chat data
@@ -91,8 +91,8 @@ func NewBarChart(name string, barColor cell.Color, isOkReqs bool, nodes []model.
 	}
 
 	widget := &BarchartWidgetHandler{
-		name:     name,
-		barChart: sysBar,
+		name:                  name,
+		barChart:              sysBar,
 		isOkRequestsToCollect: isOkReqs,
 	}
 
