@@ -67,8 +67,8 @@ func (bw *BarchartWidgetHandler) getMaxRequestValue(isErrorsReqs bool, g *model.
 	return
 }
 
-// NewBarChart creates and returns prepared widget
-func NewBarChart(name string, barColor cell.Color, isOkReqs bool, nodes []model.Node) (*BarchartWidgetHandler, error) {
+// NewBarWidget creates and returns prepared widget
+func NewBarWidget(name string, barColor cell.Color, isOkReqs bool, nodes []model.Node) (*BarchartWidgetHandler, error) {
 	sysCount := len(nodes)
 	sysNames := make([]string, sysCount)
 	sysBarColors := make([]cell.Color, sysCount)

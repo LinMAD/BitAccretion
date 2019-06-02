@@ -7,7 +7,6 @@ import (
 	"github.com/mum4k/termdash/container"
 	"github.com/mum4k/termdash/linestyle"
 	"github.com/mum4k/termdash/terminal/terminalapi"
-	"github.com/mum4k/termdash/widgets/text"
 )
 
 // MonitoringDashboard core dashboard structure with constructed widgets
@@ -32,18 +31,23 @@ func NewMonitoringDashboard(dashboardName string, t terminalapi.Terminal) (*Moni
 
 	// TODO Add factory of charts
 	// Init widgets
-	okReqsBarWidget, okReqsBarWidgetErr := NewBarChart("ok_reqs_bar", cell.ColorBlue, true, stub.GetStubNodes())
+	okReqsBarWidget, okReqsBarWidgetErr := NewBarWidget("ok_reqs_bar", cell.ColorBlue, true, stub.GetStubNodes())
 	if okReqsBarWidgetErr != nil {
 		return nil, okReqsBarWidgetErr
 	}
 
-	badReqsBarWidget, badReqsBarWidgetErr := NewBarChart("bad_reqs_bar", cell.ColorRed, false, stub.GetStubNodes())
+	badReqsBarWidget, badReqsBarWidgetErr := NewBarWidget("bad_reqs_bar", cell.ColorRed, false, stub.GetStubNodes())
 	if badReqsBarWidgetErr != nil {
 		return nil, okReqsBarWidgetErr
 	}
 
-	aggSparkSuccessReq, aggSparkSuccessReqErr := NewSparkLineChart("aggregated_reqs_in_line")
+	aggSparkSuccessReq, aggSparkSuccessReqErr := NewLineWidget("aggregated_reqs_in_line")
 	if aggSparkSuccessReqErr != nil {
+		return nil, aggSparkSuccessReqErr
+	}
+
+	txtEventWidget, txtEventWidgetErr := NewTextWidget("system_error_text")
+	if txtEventWidgetErr != nil {
 		return nil, aggSparkSuccessReqErr
 	}
 
@@ -56,19 +60,21 @@ func NewMonitoringDashboard(dashboardName string, t terminalapi.Terminal) (*Moni
 	termDash.observer.RegisterNewSubscriber(okReqsBarWidget)
 	termDash.observer.RegisterNewSubscriber(badReqsBarWidget)
 	termDash.observer.RegisterNewSubscriber(aggSparkSuccessReq)
+	termDash.observer.RegisterNewSubscriber(txtEventWidget)
 
 	// TODO Spilt method to layout construct (left and right)
 
 	c, err := container.New(
 		t,
-		container.Border(linestyle.Light),
+		container.Border(linestyle.Double),
 		container.BorderTitle(dashboardName),
 		container.SplitHorizontal(
 			container.Top(
 				container.SplitVertical(
 					container.Left(
 						container.Border(linestyle.Light),
-						stubEventLogWidget(),
+						container.BorderTitle("Event log"),
+						container.PlaceWidget(txtEventWidget.t),
 					),
 					container.Right(
 						container.Border(linestyle.Light),
@@ -99,26 +105,4 @@ func NewMonitoringDashboard(dashboardName string, t terminalapi.Terminal) (*Moni
 	termDash.TerminalContainer = c
 
 	return termDash, err
-}
-
-// TODO Remove that stub
-func stubEventLogWidget() container.Option {
-	wrapped, err := text.New(text.WrapAtRunes())
-	if err != nil {
-		panic(err)
-	}
-	if err := wrapped.Write("|2019:09:14 12:50| Error in Name 1\n", text.WriteCellOpts(cell.FgColor(cell.ColorRed))); err != nil {
-		panic(err)
-	}
-	if err := wrapped.Write("|2019:09:14 12:51| Error in Name 1\n", text.WriteCellOpts(cell.FgColor(cell.ColorRed))); err != nil {
-		panic(err)
-	}
-	if err := wrapped.Write("|2019:09:14 12:52| Error in Name 1\n", text.WriteCellOpts(cell.FgColor(cell.ColorRed))); err != nil {
-		panic(err)
-	}
-	if err := wrapped.Write("|2019:09:14 12:53| Error in Name 2\n", text.WriteCellOpts(cell.FgColor(cell.ColorRed))); err != nil {
-		panic(err)
-	}
-
-	return container.PlaceWidget(wrapped)
 }

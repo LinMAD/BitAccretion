@@ -75,8 +75,8 @@ func (s *SparkLineWidgetHandler) updateLineData(g *model.Graph) {
 	s.lines.badData = append(badPoints, badPoint)
 }
 
-// NewSparkLineChart creates and returns prepared widget
-func NewSparkLineChart(name string) (*SparkLineWidgetHandler, error) {
+// NewLineWidget creates and returns prepared widget
+func NewLineWidget(name string) (*SparkLineWidgetHandler, error) {
 	lc, err := linechart.New(
 		linechart.AxesCellOpts(cell.FgColor(cell.ColorWhite)),
 		linechart.YLabelCellOpts(cell.FgColor(cell.ColorWhite)),

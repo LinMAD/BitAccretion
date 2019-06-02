@@ -14,7 +14,7 @@ const (
 
 // HealthStatesMap to string
 var HealthStatesMap = map[HealthState]string{
-	HealthNormal:   "HealthNormal",
-	HealthWarning:  "HealthWarning",
-	HealthCritical: "HealthCritical",
+	HealthNormal:   "Normal",
+	HealthWarning:  "Warning",
+	HealthCritical: "Critical",
 }
