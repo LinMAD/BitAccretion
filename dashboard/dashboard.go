@@ -11,61 +11,64 @@ import (
 
 // MonitoringDashboard core dashboard structure with constructed widgets
 type MonitoringDashboard struct {
-	observer          event.IObserver
 	TerminalContainer *container.Container
+	observer          event.IObserver
+	widgetCollection  *widgets
+}
+
+// widgets of dashboard
+type widgets struct {
+	reqSuccessful *BarchartWidgetHandler
+	reqIncorrect  *BarchartWidgetHandler
+	reqAggregated *SparkLineWidgetHandler
+	eventLog      *TextWidgetHandler
 }
 
 // HandleNotifyEvent send update to monitoring dashboard
-func (m MonitoringDashboard) HandleNotifyEvent(e event.UpdateEvent) {
+func (m *MonitoringDashboard) HandleNotifyEvent(e event.UpdateEvent) {
 	m.observer.NotifySubscribers(e)
 }
 
 // GetName of subscriber
-func (m MonitoringDashboard) GetName() string {
+func (m *MonitoringDashboard) GetName() string {
 	return "MonitoringDashboard"
 }
 
-// NewMonitoringDashboard with constructed widgets
-func NewMonitoringDashboard(dashboardName string, t terminalapi.Terminal) (*MonitoringDashboard, error) {
-	// TODO Split method to widgets init
-
-	// TODO Add factory of charts
-	// Init widgets
-	okReqsBarWidget, okReqsBarWidgetErr := NewBarWidget("ok_reqs_bar", cell.ColorBlue, true, stub.GetStubNodes())
-	if okReqsBarWidgetErr != nil {
-		return nil, okReqsBarWidgetErr
+// initWidgets for dashboard
+func (m *MonitoringDashboard) initWidgets() (err error) {
+	m.widgetCollection.reqSuccessful, err = NewBarWidget("ok_reqs_bar", cell.ColorBlue, true, stub.GetStubNodes())
+	if err != nil {
+		return err
 	}
 
-	badReqsBarWidget, badReqsBarWidgetErr := NewBarWidget("bad_reqs_bar", cell.ColorRed, false, stub.GetStubNodes())
-	if badReqsBarWidgetErr != nil {
-		return nil, okReqsBarWidgetErr
+	m.widgetCollection.reqIncorrect, err = NewBarWidget("bad_reqs_bar", cell.ColorRed, false, stub.GetStubNodes())
+	if err != nil {
+		return err
 	}
 
-	aggSparkSuccessReq, aggSparkSuccessReqErr := NewLineWidget("aggregated_reqs_in_line")
-	if aggSparkSuccessReqErr != nil {
-		return nil, aggSparkSuccessReqErr
+	m.widgetCollection.reqAggregated, err = NewLineWidget("aggregated_reqs_in_line")
+	if err != nil {
+		return err
 	}
 
-	txtEventWidget, txtEventWidgetErr := NewTextWidget("system_error_text")
-	if txtEventWidgetErr != nil {
-		return nil, aggSparkSuccessReqErr
-	}
-
-	// Create dashboard observer
-	termDash := &MonitoringDashboard{
-		observer: event.NewDashboardObserver(),
+	m.widgetCollection.eventLog, err = NewTextWidget("system_error_text")
+	if err != nil {
+		return err
 	}
 
 	// Register widgets
-	termDash.observer.RegisterNewSubscriber(okReqsBarWidget)
-	termDash.observer.RegisterNewSubscriber(badReqsBarWidget)
-	termDash.observer.RegisterNewSubscriber(aggSparkSuccessReq)
-	termDash.observer.RegisterNewSubscriber(txtEventWidget)
+	m.observer.RegisterNewSubscriber(m.widgetCollection.reqSuccessful)
+	m.observer.RegisterNewSubscriber(m.widgetCollection.reqIncorrect)
+	m.observer.RegisterNewSubscriber(m.widgetCollection.reqAggregated)
+	m.observer.RegisterNewSubscriber(m.widgetCollection.eventLog)
 
-	// TODO Spilt method to layout construct (left and right)
+	return nil
+}
 
-	c, err := container.New(
-		t,
+// createLayout for dashboard and palce widgets
+func (m *MonitoringDashboard) createLayout(dashboardName string, t *terminalapi.Terminal) (err error) {
+	m.TerminalContainer, err = container.New(
+		*t,
 		container.Border(linestyle.Double),
 		container.BorderTitle(dashboardName),
 		container.SplitHorizontal(
@@ -74,12 +77,12 @@ func NewMonitoringDashboard(dashboardName string, t terminalapi.Terminal) (*Moni
 					container.Left(
 						container.Border(linestyle.Light),
 						container.BorderTitle("Event log"),
-						container.PlaceWidget(txtEventWidget.t),
+						container.PlaceWidget(m.widgetCollection.eventLog.t),
 					),
 					container.Right(
 						container.Border(linestyle.Light),
 						container.BorderTitle("Aggregated requests"),
-						container.PlaceWidget(aggSparkSuccessReq.lc),
+						container.PlaceWidget(m.widgetCollection.reqAggregated.lc),
 					),
 				),
 			),
@@ -90,19 +93,37 @@ func NewMonitoringDashboard(dashboardName string, t terminalapi.Terminal) (*Moni
 					container.Left(
 						container.Border(linestyle.Light),
 						container.BorderTitle("Successful"),
-						container.PlaceWidget(okReqsBarWidget.barChart),
+						container.PlaceWidget(m.widgetCollection.reqSuccessful.barChart),
 					),
 					container.Right(
 						container.Border(linestyle.Light),
 						container.BorderTitle("Incorrect"),
-						container.PlaceWidget(badReqsBarWidget.barChart),
+						container.PlaceWidget(m.widgetCollection.reqIncorrect.barChart),
 					),
 				),
 			),
 		),
 	)
 
-	termDash.TerminalContainer = c
+	return err
+}
 
-	return termDash, err
+// NewMonitoringDashboard with constructed widgets
+func NewMonitoringDashboard(dashboardName string, t terminalapi.Terminal) (*MonitoringDashboard, error) {
+	termDash := &MonitoringDashboard{
+		observer:         event.NewDashboardObserver(),
+		widgetCollection: &widgets{},
+	}
+
+	initErr := termDash.initWidgets()
+	if initErr != nil {
+		return nil, initErr
+	}
+
+	layoutErr := termDash.createLayout(dashboardName, &t)
+	if layoutErr != nil {
+		return nil, layoutErr
+	}
+
+	return termDash, nil
 }

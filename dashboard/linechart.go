@@ -31,7 +31,7 @@ func (s *SparkLineWidgetHandler) HandleNotifyEvent(e event.UpdateEvent) {
 		"ok",
 		s.lines.okData,
 		linechart.SeriesCellOpts(cell.FgColor(cell.ColorGreen)),
-		linechart.SeriesXLabels(map[int]string{0: "Iteration: "}),
+		linechart.SeriesXLabels(map[int]string{0: "Last updates: "}),
 	)
 	if okLineErr != nil {
 		panic(okLineErr) // TODO Handle in grace way, log or ignore
