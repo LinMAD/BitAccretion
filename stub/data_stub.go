@@ -6,7 +6,7 @@ import (
 	"github.com/LinMAD/BitAccretion/model"
 )
 
-// GetStubNodes generated dummy data
+// GetStubNodes generated dummy nodes with data
 func GetStubNodes() []model.Node {
 	sysNames := []string{
 		"Lipstick", "Steward",
@@ -30,6 +30,17 @@ func GetStubNodes() []model.Node {
 	}
 
 	return nodes
+}
+
+// GetStubGraph generated dummy graph with nodes
+func GetStubGraph() model.Graph {
+	g := model.NewGraph()
+
+	for _, n := range GetStubNodes() {
+		g.AddVertex(model.VertexName(n.Name), n)
+	}
+
+	return *g
 }
 
 func getRandomHealthState() model.HealthState {

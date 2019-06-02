@@ -22,9 +22,12 @@ func main() {
 	}
 	defer t.Close()
 
+	// TODO Get data from provider
+	graph := stub.GetStubGraph()
+
 	// TODO Use same context to cancel all widgets subscribers
 	ctx, cancel := context.WithCancel(context.Background())
-	monitoringDashboard, err := dashboard.NewMonitoringDashboard("BitAccretion", t)
+	monitoringDashboard, err := dashboard.NewMonitoringDashboard("BitAccretion", t, graph)
 	if err != nil {
 		panic(err)
 	}

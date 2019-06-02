@@ -2,7 +2,7 @@ package dashboard
 
 import (
 	"github.com/LinMAD/BitAccretion/event"
-	"github.com/LinMAD/BitAccretion/stub"
+	"github.com/LinMAD/BitAccretion/model"
 	"github.com/mum4k/termdash/cell"
 	"github.com/mum4k/termdash/container"
 	"github.com/mum4k/termdash/linestyle"
@@ -36,13 +36,13 @@ func (m *MonitoringDashboard) GetName() string {
 }
 
 // initWidgets for dashboard
-func (m *MonitoringDashboard) initWidgets() (err error) {
-	m.widgetCollection.reqSuccessful, err = NewBarWidget("ok_reqs_bar_widget", cell.ColorBlue, true, stub.GetStubNodes())
+func (m *MonitoringDashboard) initWidgets(nodes []model.Node) (err error) {
+	m.widgetCollection.reqSuccessful, err = NewBarWidget("ok_reqs_bar_widget", cell.ColorBlue, true, nodes)
 	if err != nil {
 		return err
 	}
 
-	m.widgetCollection.reqIncorrect, err = NewBarWidget("bad_reqs_bar_widget", cell.ColorRed, false, stub.GetStubNodes())
+	m.widgetCollection.reqIncorrect, err = NewBarWidget("bad_reqs_bar_widget", cell.ColorRed, false, nodes)
 	if err != nil {
 		return err
 	}
@@ -122,13 +122,13 @@ func (m *MonitoringDashboard) createLayout(dashboardName string, t *terminalapi.
 }
 
 // NewMonitoringDashboard with constructed widgets
-func NewMonitoringDashboard(dashboardName string, t terminalapi.Terminal) (*MonitoringDashboard, error) {
+func NewMonitoringDashboard(dashboardName string, t terminalapi.Terminal, graph model.Graph) (*MonitoringDashboard, error) {
 	termDash := &MonitoringDashboard{
 		observer:         event.NewDashboardObserver(),
 		widgetCollection: &widgets{},
 	}
 
-	initErr := termDash.initWidgets()
+	initErr := termDash.initWidgets(graph.GetAllVertices())
 	if initErr != nil {
 		return nil, initErr
 	}
