@@ -18,10 +18,11 @@ type MonitoringDashboard struct {
 
 // widgets of dashboard
 type widgets struct {
-	reqSuccessful *BarchartWidgetHandler
-	reqIncorrect  *BarchartWidgetHandler
+	reqSuccessful *BarWidgetHandler
+	reqIncorrect  *BarWidgetHandler
 	reqAggregated *SparkLineWidgetHandler
 	eventLog      *TextWidgetHandler
+	clock         *ClockWidgetHandler
 }
 
 // HandleNotifyEvent send update to monitoring dashboard
@@ -55,8 +56,12 @@ func (m *MonitoringDashboard) initWidgets() (err error) {
 	if err != nil {
 		return err
 	}
+	m.widgetCollection.clock, err = NewClockWidget()
+	if err != nil {
+		return err
+	}
 
-	// Register widgets
+	// Register widgets to be observable for graph updates
 	m.observer.RegisterNewSubscriber(m.widgetCollection.reqSuccessful)
 	m.observer.RegisterNewSubscriber(m.widgetCollection.reqIncorrect)
 	m.observer.RegisterNewSubscriber(m.widgetCollection.reqAggregated)
@@ -65,7 +70,7 @@ func (m *MonitoringDashboard) initWidgets() (err error) {
 	return nil
 }
 
-// createLayout for dashboard and palce widgets
+// createLayout for dashboard and place widgets
 func (m *MonitoringDashboard) createLayout(dashboardName string, t *terminalapi.Terminal) (err error) {
 	m.TerminalContainer, err = container.New(
 		*t,
@@ -75,9 +80,17 @@ func (m *MonitoringDashboard) createLayout(dashboardName string, t *terminalapi.
 			container.Top(
 				container.SplitVertical(
 					container.Left(
-						container.Border(linestyle.Light),
-						container.BorderTitle("Event log"),
-						container.PlaceWidget(m.widgetCollection.eventLog.t),
+						container.SplitHorizontal(
+							container.Top(
+								container.Border(linestyle.Round),
+								container.PlaceWidget(m.widgetCollection.clock.sdClock),
+							),
+							container.Bottom(
+								container.Border(linestyle.Double),
+								container.BorderTitle("Event log"),
+								container.PlaceWidget(m.widgetCollection.eventLog.t),
+							),
+						),
 					),
 					container.Right(
 						container.Border(linestyle.Light),

@@ -18,6 +18,7 @@ type TextWidgetHandler struct {
 	historyCounter int8
 }
 
+// HandleNotifyEvent write to text widget
 func (txt *TextWidgetHandler) HandleNotifyEvent(e event.UpdateEvent) {
 	// TODO Use one more function from TextWidgetHandler struct to have different event writers not only for graph
 
@@ -38,29 +39,45 @@ func (txt *TextWidgetHandler) HandleNotifyEvent(e event.UpdateEvent) {
 		}
 	}
 
-	if txt.historyCounter >= maxTextHistory {
-		txt.historyCounter = 0
-		txt.t.Reset()
-	}
+	txt.handleHistory()
 
 	for h, msg := range healthMsgList {
-		var writeErr error
+		var termColor cell.Color
 
-		if h == model.HealthCritical {
-			writeErr = txt.t.Write(msg, text.WriteCellOpts(cell.FgColor(cell.ColorRed)))
-		} else if h == model.HealthWarning {
-			writeErr = txt.t.Write(msg, text.WriteCellOpts(cell.FgColor(cell.ColorYellow)))
+		switch h {
+		case model.HealthCritical:
+			termColor = cell.ColorRed
+		case model.HealthWarning:
+			termColor = cell.ColorYellow
+		default:
+			termColor = cell.ColorWhite
 		}
 
-		if writeErr != nil {
-			panic(writeErr) // TODO Handle in grace way, log or ignore
-		}
+		txt.WriteToEventLog(msg, termColor)
 	}
 }
 
 // GetName of widget handler
 func (txt *TextWidgetHandler) GetName() string {
 	return txt.name
+}
+
+// WriteToEventLog display message with color in widget
+func (txt *TextWidgetHandler) WriteToEventLog(msg string, color cell.Color) {
+	writeErr := txt.t.Write(msg, text.WriteCellOpts(cell.FgColor(color)))
+	if writeErr != nil {
+		panic(writeErr) // TODO Think how to handle that issue, worst case scenario
+	}
+}
+
+// handleHistory of logged messages
+func (txt *TextWidgetHandler) handleHistory() {
+	if txt.historyCounter <= maxTextHistory {
+		return
+	}
+
+	txt.historyCounter = 0
+	txt.t.Reset()
 }
 
 // NewTextWidget creates and returns prepared widget

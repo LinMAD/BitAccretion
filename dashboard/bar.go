@@ -7,15 +7,15 @@ import (
 	"github.com/mum4k/termdash/widgets/barchart"
 )
 
-// BarchartWidgetHandler for dashboard
-type BarchartWidgetHandler struct {
+// BarWidgetHandler for dashboard
+type BarWidgetHandler struct {
 	name                  string
 	isOkRequestsToCollect bool
 	barChart              *barchart.BarChart
 }
 
 // HandleNotifyEvent update bar chat data
-func (bw *BarchartWidgetHandler) HandleNotifyEvent(e event.UpdateEvent) {
+func (bw *BarWidgetHandler) HandleNotifyEvent(e event.UpdateEvent) {
 	var max int
 
 	vertices := e.MonitoringGraph.GetAllVertices()
@@ -42,12 +42,12 @@ func (bw *BarchartWidgetHandler) HandleNotifyEvent(e event.UpdateEvent) {
 }
 
 // GetName of widget handler
-func (bw *BarchartWidgetHandler) GetName() string {
+func (bw *BarWidgetHandler) GetName() string {
 	return bw.name
 }
 
 // getMaxRequestValue max value from vertices
-func (bw *BarchartWidgetHandler) getMaxRequestValue(isErrorsReqs bool, g *model.Graph) (max int) {
+func (bw *BarWidgetHandler) getMaxRequestValue(isErrorsReqs bool, g *model.Graph) (max int) {
 	allVertices := g.GetAllVertices()
 
 	for i := 0; i < len(allVertices); i++ {
@@ -68,7 +68,7 @@ func (bw *BarchartWidgetHandler) getMaxRequestValue(isErrorsReqs bool, g *model.
 }
 
 // NewBarWidget creates and returns prepared widget
-func NewBarWidget(name string, barColor cell.Color, isOkReqs bool, nodes []model.Node) (*BarchartWidgetHandler, error) {
+func NewBarWidget(name string, barColor cell.Color, isOkReqs bool, nodes []model.Node) (*BarWidgetHandler, error) {
 	sysCount := len(nodes)
 	sysNames := make([]string, sysCount)
 	sysBarColors := make([]cell.Color, sysCount)
@@ -90,7 +90,7 @@ func NewBarWidget(name string, barColor cell.Color, isOkReqs bool, nodes []model
 		return nil, sysBarErr
 	}
 
-	widget := &BarchartWidgetHandler{
+	widget := &BarWidgetHandler{
 		name:                  name,
 		barChart:              sysBar,
 		isOkRequestsToCollect: isOkReqs,
