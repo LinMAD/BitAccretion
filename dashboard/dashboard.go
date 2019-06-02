@@ -32,27 +32,27 @@ func (m *MonitoringDashboard) HandleNotifyEvent(e event.UpdateEvent) {
 
 // GetName of subscriber
 func (m *MonitoringDashboard) GetName() string {
-	return "MonitoringDashboard"
+	return "monitoring_dashboard"
 }
 
 // initWidgets for dashboard
 func (m *MonitoringDashboard) initWidgets() (err error) {
-	m.widgetCollection.reqSuccessful, err = NewBarWidget("ok_reqs_bar", cell.ColorBlue, true, stub.GetStubNodes())
+	m.widgetCollection.reqSuccessful, err = NewBarWidget("ok_reqs_bar_widget", cell.ColorBlue, true, stub.GetStubNodes())
 	if err != nil {
 		return err
 	}
 
-	m.widgetCollection.reqIncorrect, err = NewBarWidget("bad_reqs_bar", cell.ColorRed, false, stub.GetStubNodes())
+	m.widgetCollection.reqIncorrect, err = NewBarWidget("bad_reqs_bar_widget", cell.ColorRed, false, stub.GetStubNodes())
 	if err != nil {
 		return err
 	}
 
-	m.widgetCollection.reqAggregated, err = NewLineWidget("aggregated_reqs_in_line")
+	m.widgetCollection.reqAggregated, err = NewLineWidget("aggregated_reqs_line_widget")
 	if err != nil {
 		return err
 	}
 
-	m.widgetCollection.eventLog, err = NewTextWidget("system_error_text")
+	m.widgetCollection.eventLog, err = NewTextWidget("system_error_text_widget")
 	if err != nil {
 		return err
 	}

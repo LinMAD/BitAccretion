@@ -2,13 +2,14 @@ package main
 
 import (
 	"context"
-	"github.com/LinMAD/BitAccretion/event"
-	"github.com/LinMAD/BitAccretion/model"
-	"github.com/LinMAD/BitAccretion/stub"
 	"math/rand"
 	"time"
 
 	"github.com/LinMAD/BitAccretion/dashboard"
+	"github.com/LinMAD/BitAccretion/event"
+	"github.com/LinMAD/BitAccretion/model"
+	"github.com/LinMAD/BitAccretion/stub"
+
 	"github.com/mum4k/termdash"
 	"github.com/mum4k/termdash/terminal/termbox"
 	"github.com/mum4k/termdash/terminal/terminalapi"
@@ -28,6 +29,7 @@ func main() {
 		panic(err)
 	}
 
+	// TODO used ctx to cancel all widgets
 	monitoringObserver := event.NewDashboardObserver()
 	monitoringObserver.RegisterNewSubscriber(monitoringDashboard)
 

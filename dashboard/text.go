@@ -2,11 +2,12 @@ package dashboard
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/LinMAD/BitAccretion/event"
 	"github.com/LinMAD/BitAccretion/model"
 	"github.com/mum4k/termdash/cell"
 	"github.com/mum4k/termdash/widgets/text"
-	"time"
 )
 
 const maxTextHistory = 100
@@ -20,8 +21,6 @@ type TextWidgetHandler struct {
 
 // HandleNotifyEvent write to text widget
 func (txt *TextWidgetHandler) HandleNotifyEvent(e event.UpdateEvent) {
-	// TODO Use one more function from TextWidgetHandler struct to have different event writers not only for graph
-
 	healthMsgList := make(map[model.HealthState]string, 0)
 	systems := e.MonitoringGraph.GetAllVertices()
 	txt.historyCounter++
@@ -30,12 +29,7 @@ func (txt *TextWidgetHandler) HandleNotifyEvent(e event.UpdateEvent) {
 		sys := systems[i]
 
 		if sys.Health != model.HealthNormal {
-			healthMsgList[sys.Health] = fmt.Sprintf(
-				"|%s| %s - Health: %s\n",
-				time.Now().Format(time.Stamp),
-				sys.Name,
-				model.HealthStatesMap[sys.Health],
-			)
+			healthMsgList[sys.Health] = fmt.Sprintf("%s - Health: %s", sys.Name, model.HealthStatesMap[sys.Health])
 		}
 	}
 
@@ -64,7 +58,7 @@ func (txt *TextWidgetHandler) GetName() string {
 
 // WriteToEventLog display message with color in widget
 func (txt *TextWidgetHandler) WriteToEventLog(msg string, color cell.Color) {
-	writeErr := txt.t.Write(msg, text.WriteCellOpts(cell.FgColor(color)))
+	writeErr := txt.t.Write(fmt.Sprintf("|%s| %s\n", time.Now().Format(time.Stamp), msg), text.WriteCellOpts(cell.FgColor(color)))
 	if writeErr != nil {
 		panic(writeErr) // TODO Think how to handle that issue, worst case scenario
 	}

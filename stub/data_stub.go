@@ -1,8 +1,9 @@
 package stub
 
 import (
-	"github.com/LinMAD/BitAccretion/model"
 	"math/rand"
+
+	"github.com/LinMAD/BitAccretion/model"
 )
 
 // GetStubNodes generated dummy data

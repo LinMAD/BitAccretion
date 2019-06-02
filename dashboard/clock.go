@@ -1,10 +1,11 @@
 package dashboard
 
 import (
-	"github.com/mum4k/termdash/cell"
-	"github.com/mum4k/termdash/widgets/segmentdisplay"
 	"strings"
 	"time"
+
+	"github.com/mum4k/termdash/cell"
+	"github.com/mum4k/termdash/widgets/segmentdisplay"
 )
 
 // ClockWidgetHandler for dashboard
