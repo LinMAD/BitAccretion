@@ -32,13 +32,17 @@ func NewMonitoringDashboard(dashboardName string, t terminalapi.Terminal) (*Moni
 
 	// TODO Add factory of charts
 	// Init widgets
-	barWidget, barWidgetErr := NewBarChart("BarChartWidget", stub.GetStubNodes())
-	if barWidgetErr != nil {
-		return nil, barWidgetErr
+	okReqsBarWidget, okReqsBarWidgetErr := NewBarChart("ok_reqs_bar", cell.ColorBlue, true, stub.GetStubNodes())
+	if okReqsBarWidgetErr != nil {
+		return nil, okReqsBarWidgetErr
 	}
-	aggSparkSuccessReq, aggSparkSuccessReqErr := NewSparkLineChart(
-		cell.ColorGreen, "Success", stub.GetStubNodes(),
-	)
+
+	badReqsBarWidget, badReqsBarWidgetErr := NewBarChart("bad_reqs_bar", cell.ColorRed, false, stub.GetStubNodes())
+	if badReqsBarWidgetErr != nil {
+		return nil, okReqsBarWidgetErr
+	}
+
+	aggSparkSuccessReq, aggSparkSuccessReqErr := NewSparkLineChart("aggregated_reqs_in_line")
 	if aggSparkSuccessReqErr != nil {
 		return nil, aggSparkSuccessReqErr
 	}
@@ -49,7 +53,8 @@ func NewMonitoringDashboard(dashboardName string, t terminalapi.Terminal) (*Moni
 	}
 
 	// Register widgets
-	termDash.observer.RegisterNewSubscriber(barWidget)
+	termDash.observer.RegisterNewSubscriber(okReqsBarWidget)
+	termDash.observer.RegisterNewSubscriber(badReqsBarWidget)
 	termDash.observer.RegisterNewSubscriber(aggSparkSuccessReq)
 
 	// TODO Spilt method to layout construct (left and right)
@@ -75,7 +80,18 @@ func NewMonitoringDashboard(dashboardName string, t terminalapi.Terminal) (*Moni
 			container.Bottom(
 				container.Border(linestyle.Round),
 				container.BorderTitle("Requests to systems"),
-				container.PlaceWidget(barWidget.barChart),
+				container.SplitVertical(
+					container.Left(
+						container.Border(linestyle.Light),
+						container.BorderTitle("Successful"),
+						container.PlaceWidget(okReqsBarWidget.barChart),
+					),
+					container.Right(
+						container.Border(linestyle.Light),
+						container.BorderTitle("Incorrect"),
+						container.PlaceWidget(badReqsBarWidget.barChart),
+					),
+				),
 			),
 		),
 	)

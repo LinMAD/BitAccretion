@@ -10,58 +10,74 @@ import (
 // BarchartWidgetHandler for dashboard
 type BarchartWidgetHandler struct {
 	name     string
+	isOkRequestsToCollect bool
 	barChart *barchart.BarChart
 }
 
 // HandleNotifyEvent update bar chat data
-func (barWidget *BarchartWidgetHandler) HandleNotifyEvent(e event.UpdateEvent) {
-	max := getMaxRequestValue(&e.MonitoringGraph)
+func (bw *BarchartWidgetHandler) HandleNotifyEvent(e event.UpdateEvent) {
+	var max int
+
 	vertices := e.MonitoringGraph.GetAllVertices()
 	l := len(vertices)
 
-	data := make([]int, l)
-	for i := 0; i < l; i++ {
-		data[i] = vertices[i].Metric.RequestCount
+	if bw.isOkRequestsToCollect {
+		max = bw.getMaxRequestValue(false, &e.MonitoringGraph)
+	} else {
+		max = bw.getMaxRequestValue(true, &e.MonitoringGraph)
 	}
 
-	// Add values to bar barChart and put max value of it
-	if err := barWidget.barChart.Values(data, max); err != nil {
+	data := make([]int, l)
+	for i := 0; i < l; i++ {
+		if bw.isOkRequestsToCollect {
+			data[i] = vertices[i].Metric.RequestCount
+		} else {
+			data[i] = vertices[i].Metric.ErrorCount
+		}
+	}
+
+	if err := bw.barChart.Values(data, max); err != nil {
 		panic(err) // TODO Handle in grace way, log or ignore
 	}
 }
 
 // GetName of widget handler
-func (barWidget *BarchartWidgetHandler) GetName() string {
-	return barWidget.name
+func (bw *BarchartWidgetHandler) GetName() string {
+	return bw.name
+}
+
+// getMaxRequestValue max value from vertices
+func (bw *BarchartWidgetHandler) getMaxRequestValue(isErrorsReqs bool, g *model.Graph) (max int) {
+	allVertices := g.GetAllVertices()
+
+	for i := 0; i < len(allVertices); i++ {
+		if isErrorsReqs {
+			if max < allVertices[i].Metric.ErrorCount {
+				max = allVertices[i].Metric.ErrorCount
+			}
+
+			continue
+		}
+
+		if max < allVertices[i].Metric.RequestCount {
+			max = allVertices[i].Metric.RequestCount
+		}
+	}
+
+	return
 }
 
 // NewBarChart creates and returns prepared widget
-func NewBarChart(name string, nodes []model.Node) (*BarchartWidgetHandler, error) {
-	barWidth := 0
+func NewBarChart(name string, barColor cell.Color, isOkReqs bool, nodes []model.Node) (*BarchartWidgetHandler, error) {
 	sysCount := len(nodes)
 	sysNames := make([]string, sysCount)
 	sysBarColors := make([]cell.Color, sysCount)
 	sysValBarColors := make([]cell.Color, sysCount)
 
-	// TODO Think is it really need to color on new health, if so must be done in event (Is it possible in API?)
 	for i := 0; i < sysCount; i++ {
 		sysNames[i] = nodes[i].Name
-
-		switch nodes[i].Health {
-		case model.HealthWarning:
-			sysBarColors[i] = cell.ColorYellow
-			sysValBarColors[i] = cell.ColorWhite
-		case model.HealthCritical:
-			sysBarColors[i] = cell.ColorRed
-			sysValBarColors[i] = cell.ColorWhite
-		default:
-			sysBarColors[i] = cell.ColorBlue
-			sysValBarColors[i] = cell.ColorWhite
-		}
-
-		if barWidth < len(nodes[i].Name) {
-			barWidth = len(nodes[i].Name)
-		}
+		sysBarColors[i] = barColor
+		sysValBarColors[i] = cell.ColorWhite
 	}
 
 	sysBar, sysBarErr := barchart.New(
@@ -77,6 +93,7 @@ func NewBarChart(name string, nodes []model.Node) (*BarchartWidgetHandler, error
 	widget := &BarchartWidgetHandler{
 		name:     name,
 		barChart: sysBar,
+		isOkRequestsToCollect: isOkReqs,
 	}
 
 	return widget, nil

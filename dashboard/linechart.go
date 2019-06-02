@@ -25,7 +25,7 @@ type seriesData struct {
 
 // HandleNotifyEvent update spark line chat data
 func (s *SparkLineWidgetHandler) HandleNotifyEvent(e event.UpdateEvent) {
-	s.updateLineData(e.MonitoringGraph.GetAllVertices())
+	s.updateLineData(&e.MonitoringGraph)
 
 	okLineErr := s.lc.Series(
 		"ok",
@@ -34,12 +34,12 @@ func (s *SparkLineWidgetHandler) HandleNotifyEvent(e event.UpdateEvent) {
 		linechart.SeriesXLabels(map[int]string{0: "Iteration: "}),
 	)
 	if okLineErr != nil {
-		panic(okLineErr)
+		panic(okLineErr) // TODO Handle in grace way, log or ignore
 	}
 
 	badLineErr := s.lc.Series("bad", s.lines.badData, linechart.SeriesCellOpts(cell.FgColor(cell.ColorRed)))
 	if badLineErr != nil {
-		panic(badLineErr)
+		panic(badLineErr) // TODO Handle in grace way, log or ignore
 	}
 }
 
@@ -48,32 +48,10 @@ func (s *SparkLineWidgetHandler) GetName() string {
 	return s.name
 }
 
-// NewSparkLineChart creates and returns prepared widget
-func NewSparkLineChart(color cell.Color, name string, nodes []model.Node) (*SparkLineWidgetHandler, error) {
-	lc, err := linechart.New(
-		linechart.AxesCellOpts(cell.FgColor(cell.ColorWhite)),
-		linechart.YLabelCellOpts(cell.FgColor(cell.ColorWhite)),
-		linechart.XLabelCellOpts(cell.FgColor(cell.ColorWhite)),
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	widget := &SparkLineWidgetHandler{
-		name:     name,
-		lc: lc,
-		lines:seriesData{
-			okData:  make([]float64, 0),
-			badData: make([]float64, 0),
-		},
-	}
-
-	return widget, nil
-}
-
-// updateLineData in widget
-func (s *SparkLineWidgetHandler) updateLineData(nodes []model.Node) {
+// updateLineData in widget with stored history of each prev points
+func (s *SparkLineWidgetHandler) updateLineData(g *model.Graph) {
 	var okPoints, badPoints []float64
+	nodes := g.GetAllVertices()
 
 	if len(s.lines.okData) >= maxPoints {
 		okPoints = s.lines.okData[1:maxPoints]
@@ -95,4 +73,27 @@ func (s *SparkLineWidgetHandler) updateLineData(nodes []model.Node) {
 
 	s.lines.okData = append(okPoints, okPoint)
 	s.lines.badData =  append(badPoints, badPoint)
+}
+
+// NewSparkLineChart creates and returns prepared widget
+func NewSparkLineChart(name string) (*SparkLineWidgetHandler, error) {
+	lc, err := linechart.New(
+		linechart.AxesCellOpts(cell.FgColor(cell.ColorWhite)),
+		linechart.YLabelCellOpts(cell.FgColor(cell.ColorWhite)),
+		linechart.XLabelCellOpts(cell.FgColor(cell.ColorWhite)),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	widget := &SparkLineWidgetHandler{
+		name:     name,
+		lc: lc,
+		lines:seriesData{
+			okData:  make([]float64, 0),
+			badData: make([]float64, 0),
+		},
+	}
+
+	return widget, nil
 }
