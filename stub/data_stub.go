@@ -13,8 +13,7 @@ func GetStubNodes() []model.Node {
 		"Gray Knife", "Jungle Paladin",
 		"Urban Scorpion", "Magnet",
 		"Blockade", "Boomstick",
-		"Orange Jack", "Petere Winter",
-		"Foo Bar",
+		"Orange Jack", "Red Winter",
 	}
 
 	nodes := make([]model.Node, len(sysNames))

@@ -7,39 +7,44 @@ import (
 	"github.com/mum4k/termdash/widgets/linechart"
 )
 
+// maxPoints in line chart for one line (control visual overflow and data updates)
+const maxPoints = 50
+
 // SparkLineWidgetHandler for dashboard
 type SparkLineWidgetHandler struct {
 	name     string
 	lc *linechart.LineChart
+	lines seriesData
+}
+
+// seriesData used to draw points in line chart
+type seriesData struct {
+	okData []float64
+	badData []float64
 }
 
 // HandleNotifyEvent update spark line chat data
-func (s SparkLineWidgetHandler) HandleNotifyEvent(e event.UpdateEvent) {
-	vertices := e.MonitoringGraph.GetAllVertices()
-	l := len(vertices)
+func (s *SparkLineWidgetHandler) HandleNotifyEvent(e event.UpdateEvent) {
+	s.updateLineData(e.MonitoringGraph.GetAllVertices())
 
-	sData := make([]float64, l)
-	eData := make([]float64, l)
-	for i := 0; i < l; i++ {
-		sData[i] = float64(vertices[i].Metric.RequestCount)
-		eData[i] = float64(vertices[i].Metric.ErrorCount)
-	}
-
-	lcErr := s.lc.Series(
+	okLineErr := s.lc.Series(
 		"ok",
-		sData,
+		s.lines.okData,
 		linechart.SeriesCellOpts(cell.FgColor(cell.ColorGreen)),
+		linechart.SeriesXLabels(map[int]string{0: "Iteration: "}),
 	)
-	if lcErr != nil {
-		panic(lcErr)
+	if okLineErr != nil {
+		panic(okLineErr)
 	}
-	if err := s.lc.Series("bad", eData, linechart.SeriesCellOpts(cell.FgColor(cell.ColorRed))); err != nil {
-		panic(err)
+
+	badLineErr := s.lc.Series("bad", s.lines.badData, linechart.SeriesCellOpts(cell.FgColor(cell.ColorRed)))
+	if badLineErr != nil {
+		panic(badLineErr)
 	}
 }
 
 // GetName of widget handler
-func (s SparkLineWidgetHandler) GetName() string {
+func (s *SparkLineWidgetHandler) GetName() string {
 	return s.name
 }
 
@@ -57,7 +62,37 @@ func NewSparkLineChart(color cell.Color, name string, nodes []model.Node) (*Spar
 	widget := &SparkLineWidgetHandler{
 		name:     name,
 		lc: lc,
+		lines:seriesData{
+			okData:  make([]float64, 0),
+			badData: make([]float64, 0),
+		},
 	}
 
 	return widget, nil
+}
+
+// updateLineData in widget
+func (s *SparkLineWidgetHandler) updateLineData(nodes []model.Node) {
+	var okPoints, badPoints []float64
+
+	if len(s.lines.okData) >= maxPoints {
+		okPoints = s.lines.okData[1:maxPoints]
+	} else {
+		okPoints = s.lines.okData
+	}
+
+	if len(s.lines.badData) >= maxPoints {
+		badPoints = s.lines.badData[1:maxPoints]
+	} else {
+		badPoints = s.lines.badData
+	}
+
+	var okPoint, badPoint float64
+	for i := 0; i < len(nodes); i++ {
+		okPoint += float64(nodes[i].Metric.RequestCount)
+		badPoint += float64(nodes[i].Metric.ErrorCount)
+	}
+
+	s.lines.okData = append(okPoints, okPoint)
+	s.lines.badData =  append(badPoints, badPoint)
 }
