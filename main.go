@@ -2,19 +2,50 @@ package main
 
 import (
 	"context"
+	"log"
 	"math/rand"
+	"os"
+	"plugin"
 	"time"
 
 	"github.com/LinMAD/BitAccretion/dashboard"
 	"github.com/LinMAD/BitAccretion/event"
 	"github.com/LinMAD/BitAccretion/logger"
 	"github.com/LinMAD/BitAccretion/model"
+	"github.com/LinMAD/BitAccretion/provider"
 	"github.com/LinMAD/BitAccretion/stub"
 
 	"github.com/mum4k/termdash"
 	"github.com/mum4k/termdash/terminal/termbox"
 	"github.com/mum4k/termdash/terminal/terminalapi"
 )
+
+var (
+	providerImpl provider.IProvider
+	configPath   string
+)
+
+func init() {
+	wd, err := os.Getwd()
+	if err != nil {
+		panic("Could not retrieve working directory, error: " + err.Error())
+	}
+	configPath = wd + "/config.json"
+
+	mod, err := plugin.Open(wd + "/provider.so")
+	if err != nil {
+		panic("Unable to open provider.so plugin, error: " + err.Error())
+	}
+
+	// Validate plugin - lookup for exported base function to get implementation
+	prc, err := mod.Lookup("NewProvider")
+	if err != nil {
+		log.Fatalf("Expected to be exported Processor structure in plugin, err: %v", err)
+	}
+
+	// Add implemented plugin to kernel
+	providerImpl = prc.(func() provider.IProvider)()
+}
 
 func main() {
 	t, err := termbox.New()
@@ -31,6 +62,17 @@ func main() {
 	monitoringDashboard, err := dashboard.NewMonitoringDashboard("BitAccretion", t, graph)
 	if err != nil {
 		panic(err)
+	}
+
+	// Load plugin settings
+	pluginCfgErr := providerImpl.LoadConfig(configPath)
+	if pluginCfgErr != nil {
+		panic("Provider configuration error: " + pluginCfgErr.Error())
+	}
+
+	pluginBootErr := providerImpl.Boot(monitoringDashboard.EventLogger)
+	if pluginBootErr != nil {
+		panic("Provider boot error: " + pluginBootErr.Error())
 	}
 
 	// TODO used ctx to cancel all widgets

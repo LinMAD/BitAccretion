@@ -9,4 +9,4 @@ type SystemMetric struct {
 }
 
 // SystemMetaData additional information in string format
-type SystemMetaData string
+type SystemMetaData interface{}

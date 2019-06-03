@@ -19,3 +19,7 @@ prepare:
 ## Compile go code
 build: golint gotest
 	go build -o BitAccretion main.go
+
+## Compile new relic processor
+com_plugin_relic:
+	go build -buildmode=plugin -o ./provider.so plugin/newrelic/provider.go
