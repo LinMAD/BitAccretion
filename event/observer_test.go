@@ -1,6 +1,7 @@
 package event
 
 import (
+	"github.com/LinMAD/BitAccretion/logger"
 	"testing"
 )
 
@@ -15,12 +16,14 @@ type testObserverSubscriber struct {
 	name string
 }
 
-func (s *testObserverSubscriber) HandleNotifyEvent(e UpdateEvent) {
+func (s *testObserverSubscriber) HandleNotifyEvent(e UpdateEvent) error {
 	if s.GetName() == testSubscriberName {
 		testSubscriberValid = true
 	}
 
 	testSubscriberNotified = true
+
+	return nil
 }
 
 func (s *testObserverSubscriber) GetName() string {
@@ -28,10 +31,8 @@ func (s *testObserverSubscriber) GetName() string {
 }
 
 func TestObserverSubscriber(t *testing.T) {
-	ob := NewDashboardObserver()
-	ob.RegisterNewSubscriber(&testObserverSubscriber{
-		name: testSubscriberName,
-	})
+	ob := NewDashboardObserver(logger.NullLogger{})
+	ob.RegisterNewSubscriber(&testObserverSubscriber{name: testSubscriberName})
 
 	ob.NotifySubscribers(UpdateEvent{})
 	if !testSubscriberNotified || !testSubscriberValid {

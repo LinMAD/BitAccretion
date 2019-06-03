@@ -15,7 +15,7 @@ type BarWidgetHandler struct {
 }
 
 // HandleNotifyEvent update bar chat data
-func (bw *BarWidgetHandler) HandleNotifyEvent(e event.UpdateEvent) {
+func (bw *BarWidgetHandler) HandleNotifyEvent(e event.UpdateEvent) error {
 	var max int
 
 	vertices := e.MonitoringGraph.GetAllVertices()
@@ -36,9 +36,7 @@ func (bw *BarWidgetHandler) HandleNotifyEvent(e event.UpdateEvent) {
 		}
 	}
 
-	if err := bw.barChart.Values(data, max); err != nil {
-		panic(err) // TODO Handle in grace way, log or ignore
-	}
+	return bw.barChart.Values(data, max)
 }
 
 // GetName of widget handler

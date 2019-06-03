@@ -2,6 +2,7 @@ package dashboard
 
 import (
 	"github.com/LinMAD/BitAccretion/event"
+	"github.com/LinMAD/BitAccretion/logger"
 	"github.com/LinMAD/BitAccretion/model"
 	"github.com/mum4k/termdash/cell"
 	"github.com/mum4k/termdash/container"
@@ -12,6 +13,7 @@ import (
 // MonitoringDashboard core dashboard structure with constructed widgets
 type MonitoringDashboard struct {
 	TerminalContainer *container.Container
+	EventLogger       logger.ILogger
 	observer          event.IObserver
 	widgetCollection  *widgets
 }
@@ -26,8 +28,10 @@ type widgets struct {
 }
 
 // HandleNotifyEvent send update to monitoring dashboard
-func (m *MonitoringDashboard) HandleNotifyEvent(e event.UpdateEvent) {
+func (m *MonitoringDashboard) HandleNotifyEvent(e event.UpdateEvent) error {
 	m.observer.NotifySubscribers(e)
+
+	return nil
 }
 
 // GetName of subscriber
@@ -60,12 +64,6 @@ func (m *MonitoringDashboard) initWidgets(nodes []model.Node) (err error) {
 	if err != nil {
 		return err
 	}
-
-	// Register widgets to be observable for graph updates
-	m.observer.RegisterNewSubscriber(m.widgetCollection.reqSuccessful)
-	m.observer.RegisterNewSubscriber(m.widgetCollection.reqIncorrect)
-	m.observer.RegisterNewSubscriber(m.widgetCollection.reqAggregated)
-	m.observer.RegisterNewSubscriber(m.widgetCollection.eventLog)
 
 	return nil
 }
@@ -121,12 +119,11 @@ func (m *MonitoringDashboard) createLayout(dashboardName string, t *terminalapi.
 	return err
 }
 
-// NewMonitoringDashboard with constructed widgets
+// TODO Add config of dashboard to reduce arguments in function
+
+// NewMonitoringDashboard constructor, will prepare widgets, subscriber's and dependencies
 func NewMonitoringDashboard(dashboardName string, t terminalapi.Terminal, graph model.Graph) (*MonitoringDashboard, error) {
-	termDash := &MonitoringDashboard{
-		observer:         event.NewDashboardObserver(),
-		widgetCollection: &widgets{},
-	}
+	termDash := &MonitoringDashboard{widgetCollection: &widgets{}}
 
 	initErr := termDash.initWidgets(graph.GetAllVertices())
 	if initErr != nil {
@@ -137,6 +134,16 @@ func NewMonitoringDashboard(dashboardName string, t terminalapi.Terminal, graph 
 	if layoutErr != nil {
 		return nil, layoutErr
 	}
+
+	// Add dependencies
+	termDash.EventLogger = &loggerHandler{lvl: logger.NormalLog, widget: termDash.widgetCollection.eventLog}
+	termDash.observer = event.NewDashboardObserver(termDash.EventLogger)
+
+	// Register widgets to be observable for graph updates
+	termDash.observer.RegisterNewSubscriber(termDash.widgetCollection.reqSuccessful)
+	termDash.observer.RegisterNewSubscriber(termDash.widgetCollection.reqIncorrect)
+	termDash.observer.RegisterNewSubscriber(termDash.widgetCollection.reqAggregated)
+	termDash.observer.RegisterNewSubscriber(termDash.widgetCollection.eventLog)
 
 	return termDash, nil
 }

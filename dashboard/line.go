@@ -24,7 +24,7 @@ type seriesData struct {
 }
 
 // HandleNotifyEvent update spark line chat data
-func (s *SparkLineWidgetHandler) HandleNotifyEvent(e event.UpdateEvent) {
+func (s *SparkLineWidgetHandler) HandleNotifyEvent(e event.UpdateEvent) error {
 	s.updateLineData(&e.MonitoringGraph)
 
 	okLineErr := s.lc.Series(
@@ -34,13 +34,15 @@ func (s *SparkLineWidgetHandler) HandleNotifyEvent(e event.UpdateEvent) {
 		linechart.SeriesXLabels(map[int]string{0: "Last updates: "}),
 	)
 	if okLineErr != nil {
-		panic(okLineErr) // TODO Handle in grace way, log or ignore
+		return okLineErr
 	}
 
 	badLineErr := s.lc.Series("bad", s.lines.badData, linechart.SeriesCellOpts(cell.FgColor(cell.ColorRed)))
 	if badLineErr != nil {
-		panic(badLineErr) // TODO Handle in grace way, log or ignore
+		return badLineErr
 	}
+
+	return nil
 }
 
 // GetName of widget handler

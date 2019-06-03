@@ -20,7 +20,7 @@ type TextWidgetHandler struct {
 }
 
 // HandleNotifyEvent write to text widget
-func (txt *TextWidgetHandler) HandleNotifyEvent(e event.UpdateEvent) {
+func (txt *TextWidgetHandler) HandleNotifyEvent(e event.UpdateEvent) error {
 	healthMsgList := make(map[model.HealthState]string, 0)
 	systems := e.MonitoringGraph.GetAllVertices()
 	txt.historyCounter++
@@ -49,6 +49,8 @@ func (txt *TextWidgetHandler) HandleNotifyEvent(e event.UpdateEvent) {
 
 		txt.WriteToEventLog(msg, termColor)
 	}
+
+	return nil
 }
 
 // GetName of widget handler

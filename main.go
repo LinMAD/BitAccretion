@@ -7,6 +7,7 @@ import (
 
 	"github.com/LinMAD/BitAccretion/dashboard"
 	"github.com/LinMAD/BitAccretion/event"
+	"github.com/LinMAD/BitAccretion/logger"
 	"github.com/LinMAD/BitAccretion/model"
 	"github.com/LinMAD/BitAccretion/stub"
 
@@ -33,7 +34,7 @@ func main() {
 	}
 
 	// TODO used ctx to cancel all widgets
-	monitoringObserver := event.NewDashboardObserver()
+	monitoringObserver := event.NewDashboardObserver(monitoringDashboard.EventLogger)
 	monitoringObserver.RegisterNewSubscriber(monitoringDashboard)
 
 	quitter := func(k *terminalapi.Keyboard) {
@@ -43,14 +44,14 @@ func main() {
 	}
 
 	// TODO Replace that
-	go playMonitoring(monitoringObserver, 1*time.Second)
+	go playMonitoring(monitoringObserver, monitoringDashboard.EventLogger, 1*time.Second)
 
 	runErr := termdash.Run(
 		ctx,
 		t,
 		monitoringDashboard.TerminalContainer,
 		termdash.KeyboardSubscriber(quitter),
-		termdash.RedrawInterval(500*time.Millisecond),
+		termdash.RedrawInterval(1*time.Second),
 	)
 	if runErr != nil {
 		panic(err)
@@ -58,7 +59,7 @@ func main() {
 }
 
 // TODO Remove stub and make with channels
-func playMonitoring(monitoringObserver event.IObserver, delay time.Duration) []model.Node {
+func playMonitoring(monitoringObserver event.IObserver, log logger.ILogger, delay time.Duration) []model.Node {
 	nodes := stub.GetStubNodes()
 
 	ticker := time.NewTicker(delay)
@@ -66,6 +67,8 @@ func playMonitoring(monitoringObserver event.IObserver, delay time.Duration) []m
 	for {
 		select {
 		case <-ticker.C:
+			log.Normal("Received new monitoring graph update")
+
 			graph := model.NewGraph()
 			for i := 0; i < len(nodes); i++ {
 				nodes[i].Metric.RequestCount = rand.Intn(15000)
