@@ -31,7 +31,8 @@ func NewRelicWorker(APIKey string) (*RelicWorker, error) {
 		relicClient: client.NewRelicClient(APIKey),
 	}
 
-	if !rw.relicClient.Authenticate() {
+	isAuth, err := rw.relicClient.Authenticate()
+	if err != nil || !isAuth {
 		return nil, fmt.Errorf("%s: Unable to pass authetication with key: %s", relicTag, APIKey)
 	}
 

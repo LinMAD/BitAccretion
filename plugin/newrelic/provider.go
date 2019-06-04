@@ -2,11 +2,9 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"os"
 	"sync"
 
-	"github.com/LinMAD/BitAccretion/logger"
 	"github.com/LinMAD/BitAccretion/model"
 	"github.com/LinMAD/BitAccretion/plugin/newrelic/worker"
 	"github.com/LinMAD/BitAccretion/provider"
@@ -35,19 +33,14 @@ type AppDetails struct {
 	RelicMetrics []string `json:"relic_metrics"`
 }
 
-
 // ProviderNewRelic base structure for plugin workflow
 type ProviderNewRelic struct {
 	// Config for new relic plugin
 	Config NRConfig
-	// log messages in runtime
-	log logger.ILogger
 	// worker to harvesting API for metric data
 	worker *worker.RelicWorker
 	// pluginHealth current state of plugin
 	pluginHealth model.HealthState
-	// systemGraph is observable data
-	systemGraph model.Graph
 }
 
 // LoadConfig of new relic plugin
@@ -72,36 +65,33 @@ func (nr *ProviderNewRelic) LoadConfig(pathToConfig string) error {
 }
 
 // Boot setups all configuration and dependencies
-func (nr *ProviderNewRelic) Boot(l logger.ILogger) error {
+func (nr *ProviderNewRelic) Boot() error {
 	relicWorker, relicWorkerErr := worker.NewRelicWorker(nr.Config.APIKey)
 	if relicWorkerErr != nil {
 		return relicWorkerErr
 	}
 
 	nr.worker = relicWorker
-	nr.log = l
 
 	return nil
 }
 
 // DispatchMonitoredData returns latest assembled graph
 func (nr *ProviderNewRelic) DispatchMonitoredData() (model.Graph, error) {
-	g := nr.systemGraph
+	g := nr.prepareGraph()
 
 	appList := g.GetAllVertices()
 	appCount := int8(len(appList))
 
 	var wg sync.WaitGroup
 	var w int8
-
 	for w = 0; w < appCount; w++ {
 		wg.Add(1)
 
-		go func(w int8) {
+		go func(w int8, appList []*model.Node) {
 			defer wg.Done()
 
 			app := appList[w]
-			nr.log.Normal(fmt.Sprintf("Surveying metrics of '%s'", app.Name))
 			if app.MetaData == nil {
 				return
 			}
@@ -116,12 +106,11 @@ func (nr *ProviderNewRelic) DispatchMonitoredData() (model.Graph, error) {
 				app.Metric.RequestCount += host.Metrics.RequestCount
 				app.Metric.ErrorCount += host.Metrics.ErrorCount
 			}
-		}(w)
+		}(w, appList)
 	}
-
 	wg.Wait()
 
-	return g, nil
+	return *g, nil
 }
 
 // ProvideHealth will return health of plugin if New Relic API alive\reachable
@@ -129,14 +118,14 @@ func (nr *ProviderNewRelic) ProvideHealth() model.HealthState {
 	return nr.pluginHealth
 }
 
-// createBaseGraph from given configuration
-func (nr *ProviderNewRelic) createBaseGraph() {
-	nr.systemGraph = *model.NewGraph()
+// prepareGraph from given configuration
+func (nr *ProviderNewRelic) prepareGraph() (g *model.Graph) {
+	g = model.NewGraph()
 
 	for _, set := range nr.Config.APPSets {
-		nr.systemGraph.AddVertex(
+		g.AddVertex(
 			model.VertexName(set.Name),
-			model.Node{
+			&model.Node{
 				Name:   set.Name,
 				Health: model.HealthNormal,
 				Metric: model.SystemMetric{},
@@ -148,6 +137,8 @@ func (nr *ProviderNewRelic) createBaseGraph() {
 			},
 		)
 	}
+
+	return
 }
 
 // NewProvider returns instance with implemented interface

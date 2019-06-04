@@ -20,6 +20,10 @@ prepare:
 build: golint gotest
 	go build -o BitAccretion main.go
 
-## Compile new relic processor
-com_plugin_relic:
+## Compile fake provider
+plugin_fake:
+	go build -buildmode=plugin -o ./provider.so plugin/fake/provider.go
+
+## Compile new relic provider
+plugin_relic:
 	go build -buildmode=plugin -o ./provider.so plugin/newrelic/provider.go

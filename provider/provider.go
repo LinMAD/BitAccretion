@@ -1,7 +1,6 @@
 package provider
 
 import (
-	"github.com/LinMAD/BitAccretion/logger"
 	"github.com/LinMAD/BitAccretion/model"
 )
 
@@ -11,7 +10,7 @@ type IProvider interface {
 	LoadConfig(pathToConfig string) error
 	// Boot must setup provider before DispatchMonitoredData()
 	// do validating, relating or other processes for provider needs before execution
-	Boot(log logger.ILogger) error
+	Boot() error
 	// DispatchMonitoredData executes provider to get graph with data
 	DispatchMonitoredData() (model.Graph, error)
 	// ProvideHealth must provide if plugin still can work

@@ -4,11 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net"
 	"net/http"
 	"time"
 )
+
+// TODO Refactor API client
 
 const (
 	// Log tag
@@ -42,27 +43,22 @@ func NewRelicClient(APIKey string) *NRelicClient {
 }
 
 // Authenticate pass authentication and check if API available
-func (c *NRelicClient) Authenticate() bool {
-	authReq, authReqErr := http.NewRequest("GET", fmt.Sprintf("%s/applications.json", baseURI), nil)
-	if authReqErr != nil {
-		log.Printf("%s: Unable to create authenticate request", tag)
-	}
-
+func (c *NRelicClient) Authenticate() (bool, error) {
+	authReq, _ := http.NewRequest("GET", fmt.Sprintf("%s/applications.json", baseURI), nil)
 	authReq.Header.Add("X-Api-Key", c.key)
 
 	authResp, authRespErr := c.httpClient.Do(authReq)
 	if authRespErr != nil {
-		log.Printf("%s: Unreachable err: %v", tag, authRespErr.Error())
-		return false
+		return false, nil
 	}
 
 	defer authResp.Body.Close()
 
 	if errMsg, isFound := c.relicErrorCodes[authResp.StatusCode]; isFound {
-		log.Panicf("%s: %s", tag, errMsg)
+		return false, fmt.Errorf("new relic API err %s", errMsg)
 	}
 
-	return true
+	return true, nil
 }
 
 // isReachableHost check if still have connection (helps to avoid null pointer exceptions)
@@ -74,8 +70,7 @@ func (c *NRelicClient) isReachableHost(host, port string) error {
 	if err != nil {
 		return fmt.Errorf(endpoint+" is unreachable, error: %s", err.Error())
 	}
-
-	conn.Close()
+	defer conn.Close()
 
 	return nil
 }
@@ -83,8 +78,6 @@ func (c *NRelicClient) isReachableHost(host, port string) error {
 // GetApplicationsList return applications
 func (c *NRelicClient) GetApplicationsList() Application {
 	if connectionErr := c.isReachableHost(domain, "80"); connectionErr != nil {
-		log.Printf("%s: %v", tag, connectionErr.Error())
-
 		time.Sleep(5 * time.Second)
 		return c.GetApplicationsList()
 	}
@@ -92,7 +85,6 @@ func (c *NRelicClient) GetApplicationsList() Application {
 
 	req, err := http.NewRequest("GET", fmt.Sprintf("%s/applications.json", baseURI), nil)
 	if err != nil {
-		log.Printf("%s: %v", tag, err.Error())
 		return apps
 	}
 
@@ -100,24 +92,21 @@ func (c *NRelicClient) GetApplicationsList() Application {
 
 	resp, respErr := c.httpClient.Do(req)
 	if respErr != nil {
-		log.Printf("%s: %v", tag, respErr.Error())
 		return apps
 	}
 
 	defer resp.Body.Close()
 
-	if errMsg, isFound := c.relicErrorCodes[resp.StatusCode]; isFound {
-		log.Panicf("%s: %s", tag, errMsg)
+	if _, isFound := c.relicErrorCodes[resp.StatusCode]; isFound {
 		return apps
 	}
 
 	respBody, readErr := ioutil.ReadAll(resp.Body)
 	if readErr != nil {
-		log.Printf("%s: %v", tag, readErr.Error())
 		return apps
 	}
 
-	json.Unmarshal(respBody, &apps)
+	_ = json.Unmarshal(respBody, &apps)
 
 	return apps
 }
@@ -125,9 +114,7 @@ func (c *NRelicClient) GetApplicationsList() Application {
 // GetApplicationHost returns stats by application Id
 func (c *NRelicClient) GetApplicationHost(appID string) ApplicationHost {
 	if connectionErr := c.isReachableHost(domain, "80"); connectionErr != nil {
-		log.Printf("%s: %v", tag, connectionErr.Error())
-
-		time.Sleep(5 * time.Second)
+		time.Sleep(1 * time.Second) // Do not DDoS API
 		return c.GetApplicationHost(appID)
 	}
 
@@ -135,7 +122,6 @@ func (c *NRelicClient) GetApplicationHost(appID string) ApplicationHost {
 
 	req, err := http.NewRequest("GET", fmt.Sprintf("%s/applications/%s/hosts.json", baseURI, appID), nil)
 	if err != nil {
-		log.Printf("%s: %v", tag, err.Error())
 		return appsHost
 	}
 
@@ -143,24 +129,21 @@ func (c *NRelicClient) GetApplicationHost(appID string) ApplicationHost {
 
 	resp, respErr := c.httpClient.Do(req)
 	if respErr != nil {
-		log.Printf("%s: Unreachable New Relic err: %v", tag, respErr.Error())
 		return appsHost
 	}
 
 	defer resp.Body.Close()
 
-	if errMsg, isFound := c.relicErrorCodes[resp.StatusCode]; isFound {
-		log.Printf("%s: Communication error with New Relic %s", tag, errMsg)
+	if _, isFound := c.relicErrorCodes[resp.StatusCode]; isFound {
 		return appsHost
 	}
 
 	respBody, readErr := ioutil.ReadAll(resp.Body)
 	if readErr != nil {
-		log.Printf("%s: %v", tag, readErr.Error())
 		return appsHost
 	}
 
-	json.Unmarshal(respBody, &appsHost)
+	_ = json.Unmarshal(respBody, &appsHost)
 
 	return appsHost
 }
@@ -168,9 +151,7 @@ func (c *NRelicClient) GetApplicationHost(appID string) ApplicationHost {
 // GetHostMetricData metrics for application and metrics
 func (c *NRelicClient) GetHostMetricData(appID string, hostID int, metricsNames []string) MetricsData {
 	if connectionErr := c.isReachableHost(domain, "80"); connectionErr != nil {
-		log.Printf("%s: %v", tag, connectionErr.Error())
-
-		time.Sleep(5 * time.Second)
+		time.Sleep(1 * time.Second) // Do not DDoS API
 		return c.GetHostMetricData(appID, hostID, metricsNames)
 	}
 
@@ -181,7 +162,6 @@ func (c *NRelicClient) GetHostMetricData(appID string, hostID int, metricsNames 
 
 	req, err := http.NewRequest("GET", fmt.Sprintf("%s/applications/%s/hosts/%d/metrics/data.json", baseURI, appID, hostID), nil)
 	if err != nil {
-		log.Printf("%s: %v", tag, err.Error())
 		return hostMetrics
 	}
 
@@ -197,24 +177,21 @@ func (c *NRelicClient) GetHostMetricData(appID string, hostID int, metricsNames 
 
 	resp, respErr := c.httpClient.Do(req)
 	if respErr != nil {
-		log.Printf("%s: %v", tag, respErr.Error())
 		return hostMetrics
 	}
 
 	defer resp.Body.Close()
 
-	if errMsg, isFound := c.relicErrorCodes[resp.StatusCode]; isFound {
-		log.Printf("%s: Unreachable New Relic err: %s", tag, errMsg)
+	if _, isFound := c.relicErrorCodes[resp.StatusCode]; isFound {
 		return hostMetrics
 	}
 
 	respBody, readErr := ioutil.ReadAll(resp.Body)
 	if readErr != nil {
-		log.Printf("%s: %v", tag, readErr.Error())
 		return hostMetrics
 	}
 
-	json.Unmarshal(respBody, &hostMetrics)
+	_ = json.Unmarshal(respBody, &hostMetrics)
 
 	return hostMetrics
 }

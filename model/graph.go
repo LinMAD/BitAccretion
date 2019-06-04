@@ -10,9 +10,9 @@ type (
 	Graph struct {
 		// TODO Refactor maps to slices cos Node will have name
 		// Contains application vertex
-		vertices map[VertexName]Node
+		vertices map[VertexName]*Node
 		// Contains application vertex connection
-		edges map[VertexName]map[VertexName]Node
+		edges map[VertexName]map[VertexName]*Node
 
 		lock sync.RWMutex
 	}
@@ -33,13 +33,13 @@ type (
 // NewGraph of with n nodes and edges
 func NewGraph() *Graph {
 	return &Graph{
-		vertices: make(map[VertexName]Node),
-		edges:    make(map[VertexName]map[VertexName]Node),
+		vertices: make(map[VertexName]*Node),
+		edges:    make(map[VertexName]map[VertexName]*Node),
 	}
 }
 
 // AddVertex by unique labeled vertex and return if it's added
-func (g *Graph) AddVertex(name VertexName, node Node) bool {
+func (g *Graph) AddVertex(name VertexName, node *Node) bool {
 	g.lock.Lock()
 	defer g.lock.Unlock()
 
@@ -53,7 +53,7 @@ func (g *Graph) AddVertex(name VertexName, node Node) bool {
 }
 
 // AddEdge between vertex 'from' and vertex 'to'
-func (g *Graph) AddEdge(from, to VertexName, node Node) {
+func (g *Graph) AddEdge(from, to VertexName, node *Node) {
 	g.AddVertex(from, node)
 	g.AddVertex(to, node)
 
@@ -61,7 +61,7 @@ func (g *Graph) AddEdge(from, to VertexName, node Node) {
 	defer g.lock.Unlock()
 
 	if _, ok := g.edges[from]; !ok {
-		g.edges[from] = make(map[VertexName]Node)
+		g.edges[from] = make(map[VertexName]*Node)
 	}
 
 	g.edges[from][to] = node
@@ -84,8 +84,8 @@ func (g *Graph) GetAllVerticesLabels() (names []VertexName) {
 }
 
 // GetAllVertices of graph
-func (g *Graph) GetAllVertices() (vertices []Node) {
-	vertices = make([]Node, len(g.vertices))
+func (g *Graph) GetAllVertices() (vertices []*Node) {
+	vertices = make([]*Node, len(g.vertices))
 
 	g.lock.RLock()
 	defer g.lock.RUnlock()
@@ -100,11 +100,11 @@ func (g *Graph) GetAllVertices() (vertices []Node) {
 }
 
 // GetVertexEdges returns all related edges
-func (g *Graph) GetVertexEdges(vl VertexName) map[VertexName]Node {
+func (g *Graph) GetVertexEdges(vl VertexName) map[VertexName]*Node {
 	return g.edges[vl]
 }
 
 // GetVertex returns vertex data
-func (g *Graph) GetVertex(vl VertexName) Node {
+func (g *Graph) GetVertex(vl VertexName) *Node {
 	return g.vertices[vl]
 }

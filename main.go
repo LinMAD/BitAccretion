@@ -2,8 +2,8 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
-	"math/rand"
 	"os"
 	"plugin"
 	"time"
@@ -13,7 +13,6 @@ import (
 	"github.com/LinMAD/BitAccretion/logger"
 	"github.com/LinMAD/BitAccretion/model"
 	"github.com/LinMAD/BitAccretion/provider"
-	"github.com/LinMAD/BitAccretion/stub"
 
 	"github.com/mum4k/termdash"
 	"github.com/mum4k/termdash/terminal/termbox"
@@ -54,25 +53,41 @@ func main() {
 	}
 	defer t.Close()
 
-	// TODO Get data from provider
-	graph := stub.GetStubGraph()
-
-	// TODO Use same context to cancel all widgets subscribers
-	ctx, cancel := context.WithCancel(context.Background())
-	monitoringDashboard, err := dashboard.NewMonitoringDashboard("BitAccretion", t, graph)
-	if err != nil {
-		panic(err)
-	}
+	// TODO Move that to other place (Plugin warm up)
+	/**
+	PLUGIN WARM UP
+	*/
 
 	// Load plugin settings
 	pluginCfgErr := providerImpl.LoadConfig(configPath)
 	if pluginCfgErr != nil {
-		panic("Provider configuration error: " + pluginCfgErr.Error())
+		panic("Provider configuration, error: " + pluginCfgErr.Error())
 	}
 
-	pluginBootErr := providerImpl.Boot(monitoringDashboard.EventLogger)
+	// Boot plugin
+	pluginBootErr := providerImpl.Boot()
 	if pluginBootErr != nil {
-		panic("Provider boot error: " + pluginBootErr.Error())
+		panic("Provider boot, error: " + pluginBootErr.Error())
+	}
+
+	// Get first system graph
+	var providerGraph model.Graph
+	var providerGraphErr error
+	providerGraph, providerGraphErr = providerImpl.DispatchMonitoredData()
+	if providerGraphErr != nil {
+		panic("Provider dispatch monitoring data failed, error: " + providerGraphErr.Error())
+	}
+
+	// TODO Move that to other place
+	/**
+	Dashboard creation
+	*/
+
+	// TODO Use same context to cancel all widgets subscribers
+	ctx, cancel := context.WithCancel(context.Background())
+	monitoringDashboard, err := dashboard.NewMonitoringDashboard("BitAccretion", t, providerGraph)
+	if err != nil {
+		panic(err)
 	}
 
 	// TODO used ctx to cancel all widgets
@@ -85,9 +100,15 @@ func main() {
 		}
 	}
 
-	// TODO Replace that
-	go playMonitoring(monitoringObserver, monitoringDashboard.EventLogger, 1*time.Second)
+	/**
+	Observe data changes of system
+	*/
+	// TODO Move that to pckg
+	go providerMonitoring(monitoringObserver, monitoringDashboard.EventLogger, 1*time.Second)
 
+	/**
+	Handle dashboard view
+	*/
 	runErr := termdash.Run(
 		ctx,
 		t,
@@ -100,27 +121,29 @@ func main() {
 	}
 }
 
-// TODO Remove stub and make with channels
-func playMonitoring(monitoringObserver event.IObserver, log logger.ILogger, delay time.Duration) []model.Node {
-	nodes := stub.GetStubNodes()
-
+// TODO Remove tmp func
+func providerMonitoring(monitoringObserver event.IObserver, log logger.ILogger, delay time.Duration) {
 	ticker := time.NewTicker(delay)
 	defer ticker.Stop()
 	for {
 		select {
 		case <-ticker.C:
-			log.Normal("Received new monitoring graph update")
+			log.Normal("Requesting for new monitoring graph update")
 
-			graph := model.NewGraph()
-			for i := 0; i < len(nodes); i++ {
-				nodes[i].Metric.RequestCount = rand.Intn(15000)
-				nodes[i].Metric.ErrorCount = rand.Intn(15000)
+			providerGraph, providerGraphErr := providerImpl.DispatchMonitoredData()
+			if providerGraphErr != nil {
+				log.Error(providerGraphErr.Error())
+				return
+			}
 
-				graph.AddVertex(model.VertexName(nodes[i].Name), nodes[i])
+			for _, n := range providerGraph.GetAllVertices() {
+				log.Normal(
+					fmt.Sprintf("New metrics of %s OK: %d ERR: %d", n.Name, n.Metric.RequestCount, n.Metric.ErrorCount),
+				)
 			}
 
 			monitoringObserver.NotifySubscribers(event.UpdateEvent{
-				MonitoringGraph: *graph,
+				MonitoringGraph: providerGraph,
 			})
 		}
 	}

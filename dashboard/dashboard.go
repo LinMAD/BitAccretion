@@ -40,8 +40,8 @@ func (m *MonitoringDashboard) GetName() string {
 }
 
 // initWidgets for dashboard
-func (m *MonitoringDashboard) initWidgets(nodes []model.Node) (err error) {
-	m.widgetCollection.reqSuccessful, err = NewBarWidget("ok_reqs_bar_widget", cell.ColorBlue, true, nodes)
+func (m *MonitoringDashboard) initWidgets(nodes []*model.Node) (err error) {
+	m.widgetCollection.reqSuccessful, err = NewBarWidget("ok_reqs_bar_widget", cell.ColorGreen, true, nodes)
 	if err != nil {
 		return err
 	}

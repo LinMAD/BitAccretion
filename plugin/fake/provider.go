@@ -1,13 +1,44 @@
-package stub
+package main
 
 import (
 	"math/rand"
 
 	"github.com/LinMAD/BitAccretion/model"
+	"github.com/LinMAD/BitAccretion/provider"
 )
 
+// FakeProvider randomly generates dummy data
+type FakeProvider struct {
+	pluginHealth model.HealthState
+}
+
+// LoadConfig stub
+func (f *FakeProvider) LoadConfig(pathToConfig string) error {
+	return nil
+}
+
+// Boot stub
+func (f *FakeProvider) Boot() error {
+	return nil
+}
+
+// DispatchMonitoredData with dummy data
+func (f *FakeProvider) DispatchMonitoredData() (model.Graph, error) {
+	return GetStubGraph(), nil
+}
+
+// ProvideHealth immortal
+func (f *FakeProvider) ProvideHealth() model.HealthState {
+	return f.pluginHealth
+}
+
+// NewProvider implementation
+func NewProvider() provider.IProvider {
+	return &FakeProvider{pluginHealth: model.HealthNormal}
+}
+
 // GetStubNodes generated dummy nodes with data
-func GetStubNodes() []model.Node {
+func GetStubNodes() []*model.Node {
 	sysNames := []string{
 		"Lipstick", "Steward",
 		"Siege Engine", "Homesick",
@@ -17,9 +48,9 @@ func GetStubNodes() []model.Node {
 		"Orange Jack", "Red Winter",
 	}
 
-	nodes := make([]model.Node, len(sysNames))
+	nodes := make([]*model.Node, len(sysNames))
 	for i := 0; i < len(sysNames); i++ {
-		nodes[i] = model.Node{
+		nodes[i] = &model.Node{
 			Name:   sysNames[i],
 			Health: getRandomHealthState(),
 			Metric: model.SystemMetric{

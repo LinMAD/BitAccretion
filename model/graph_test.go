@@ -24,8 +24,8 @@ func TestRunGraphTestSuite(t *testing.T) {
 }
 
 func (t *GraphTestSuite) TestVertexEdgeRelation() {
-	var edges map[VertexName]Node
-	testNode := Node{}
+	var edges map[VertexName]*Node
+	testNode := &Node{}
 
 	t.graph.AddEdge("beta", "theta", testNode)
 	t.graph.AddEdge("theta", "kilo", testNode)
@@ -42,14 +42,14 @@ func (t *GraphTestSuite) TestVertexEdgeRelation() {
 }
 
 func (t *GraphTestSuite) TestAddVertex() {
-	t.graph.AddVertex(VertexName("hotel"), Node{})
+	t.graph.AddVertex(VertexName("hotel"), &Node{})
 	vertexes := t.graph.GetAllVerticesLabels()
 
 	assert.Equal(t.Suite.T(), len(vertexes), 1)
 	assert.Equal(t.Suite.T(), vertexes[0], VertexName("hotel"))
 	assert.NotEqual(t.Suite.T(), vertexes[0], "hotel")
 
-	assert.False(t.Suite.T(), t.graph.AddVertex(VertexName("hotel"), Node{}))
+	assert.False(t.Suite.T(), t.graph.AddVertex(VertexName("hotel"), &Node{}))
 }
 
 type testAppGraph struct {
@@ -130,12 +130,12 @@ func (t *GraphTestSuite) TestGetAllVertices() {
 
 func infraLoaderHelper(infra testAppGraph, graph *Graph) {
 	if infra.NestedApp == nil {
-		graph.AddVertex(VertexName(infra.Name), Node{})
+		graph.AddVertex(VertexName(infra.Name), &Node{})
 		return
 	}
 
 	for _, nested := range infra.NestedApp {
-		graph.AddEdge(VertexName(infra.Name), VertexName(nested.Name), Node{})
+		graph.AddEdge(VertexName(infra.Name), VertexName(nested.Name), &Node{})
 
 		infraLoaderHelper(nested, graph)
 	}

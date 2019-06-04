@@ -45,15 +45,13 @@ func (bw *BarWidgetHandler) GetName() string {
 }
 
 // getMaxRequestValue max value from vertices
-func (bw *BarWidgetHandler) getMaxRequestValue(isErrorsReqs bool, g *model.Graph) (max int) {
+func (bw *BarWidgetHandler) getMaxRequestValue(isErrorsReqs bool, g *model.Graph) int {
+	max := 1
 	allVertices := g.GetAllVertices()
 
 	for i := 0; i < len(allVertices); i++ {
-		if isErrorsReqs {
-			if max < allVertices[i].Metric.ErrorCount {
-				max = allVertices[i].Metric.ErrorCount
-			}
-
+		if isErrorsReqs && max < allVertices[i].Metric.ErrorCount {
+			max = allVertices[i].Metric.ErrorCount
 			continue
 		}
 
@@ -62,11 +60,11 @@ func (bw *BarWidgetHandler) getMaxRequestValue(isErrorsReqs bool, g *model.Graph
 		}
 	}
 
-	return
+	return max
 }
 
 // NewBarWidget creates and returns prepared widget
-func NewBarWidget(name string, barColor cell.Color, isOkReqs bool, nodes []model.Node) (*BarWidgetHandler, error) {
+func NewBarWidget(name string, barColor cell.Color, isOkReqs bool, nodes []*model.Node) (*BarWidgetHandler, error) {
 	sysCount := len(nodes)
 	sysNames := make([]string, sysCount)
 	sysBarColors := make([]cell.Color, sysCount)
