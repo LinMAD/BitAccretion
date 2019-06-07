@@ -6,11 +6,13 @@ import "github.com/LinMAD/BitAccretion/model"
 type IProvider interface {
 	// LoadConfig from file to structure for processor needs, like API keys, app ids, metrics names etc.
 	LoadConfig(pathToConfig string) error
-	// Boot must setup provider before DispatchMonitoredData()
+	// Boot must setup provider before FetchNewData()
 	// do validating, relating or other processes for provider needs before execution
 	Boot() error
-	// DispatchMonitoredData executes provider to get graph with data
-	DispatchMonitoredData() (model.Graph, error)
+	// DispatchGraph must prepared graph of monitoring
+	DispatchGraph() (model.Graph, error)
+	// FetchNewData executes provider to get graph with data
+	FetchNewData() (model.Graph, error)
 	// ProvideHealth must provide if plugin still can work
 	// example API not reachable or plugin has errors and it must be restarted
 	ProvideHealth() model.HealthState

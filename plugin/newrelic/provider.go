@@ -78,8 +78,13 @@ func (nr *ProviderNewRelic) Boot() error {
 	return nil
 }
 
-// DispatchMonitoredData returns latest assembled graph
-func (nr *ProviderNewRelic) DispatchMonitoredData() (model.Graph, error) {
+// DispatchGraph prepared new relic graph of monitored systems
+func (nr *ProviderNewRelic) DispatchGraph() (model.Graph, error) {
+	return *nr.prepareGraph(), nil
+}
+
+// FetchNewData returns latest assembled graph
+func (nr *ProviderNewRelic) FetchNewData() (model.Graph, error) {
 	g := nr.prepareGraph()
 
 	appList := g.GetAllVertices()

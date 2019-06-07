@@ -12,8 +12,6 @@ import (
 // TODO Refactor API client
 
 const (
-	// Log tag
-	tag = "New Relic Client"
 	// base endpoint API
 	domain  = "api.newrelic.com"
 	baseURI = "https://api.newrelic.com/v2"
@@ -34,9 +32,7 @@ func NewRelicClient(APIKey string) *NRelicClient {
 	errorCodes[500] = "New Relic API unavailable"
 
 	return &NRelicClient{
-		httpClient: &http.Client{
-			Timeout: 10 * time.Second,
-		},
+		httpClient: &http.Client{Timeout: 10 * time.Second},
 		key:             APIKey,
 		relicErrorCodes: errorCodes,
 	}
@@ -63,7 +59,7 @@ func (c *NRelicClient) Authenticate() (bool, error) {
 
 // isReachableHost check if still have connection (helps to avoid null pointer exceptions)
 func (c *NRelicClient) isReachableHost(host, port string) error {
-	timeout := time.Duration(5 * time.Second)
+	timeout := time.Duration(1 * time.Second)
 	endpoint := host + ":" + port
 
 	conn, err := net.DialTimeout("tcp", endpoint, timeout)
@@ -78,7 +74,6 @@ func (c *NRelicClient) isReachableHost(host, port string) error {
 // GetApplicationsList return applications
 func (c *NRelicClient) GetApplicationsList() Application {
 	if connectionErr := c.isReachableHost(domain, "80"); connectionErr != nil {
-		time.Sleep(5 * time.Second)
 		return c.GetApplicationsList()
 	}
 	var apps Application
@@ -114,7 +109,6 @@ func (c *NRelicClient) GetApplicationsList() Application {
 // GetApplicationHost returns stats by application Id
 func (c *NRelicClient) GetApplicationHost(appID string) ApplicationHost {
 	if connectionErr := c.isReachableHost(domain, "80"); connectionErr != nil {
-		time.Sleep(1 * time.Second) // Do not DDoS API
 		return c.GetApplicationHost(appID)
 	}
 
@@ -151,7 +145,6 @@ func (c *NRelicClient) GetApplicationHost(appID string) ApplicationHost {
 // GetHostMetricData metrics for application and metrics
 func (c *NRelicClient) GetHostMetricData(appID string, hostID int, metricsNames []string) MetricsData {
 	if connectionErr := c.isReachableHost(domain, "80"); connectionErr != nil {
-		time.Sleep(1 * time.Second) // Do not DDoS API
 		return c.GetHostMetricData(appID, hostID, metricsNames)
 	}
 

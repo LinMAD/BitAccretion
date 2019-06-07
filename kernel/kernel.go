@@ -58,14 +58,14 @@ func (k *Kernel) initProvider(ctx context.Context) error {
 func (k *Kernel) initDashboard(ctx context.Context, t terminalapi.Terminal) error {
 	// TODO Can be added provider name to dashboard, interface update required
 	log.Println("Fetching data graph from provider...")
-	providerGraph, providerGraphErr := k.p.DispatchMonitoredData()
-	if providerGraphErr != nil {
-		return fmt.Errorf("provider dispatch monitoring data failed, error: %s", providerGraphErr.Error())
+	g, gErr := k.p.DispatchGraph()
+	if gErr != nil {
+		return fmt.Errorf("provider dispatch monitoring data failed, error: %s", gErr.Error())
 	}
 
 	log.Println("Creating terminal dashboard UI...")
 	var dErr error
-	k.d, dErr = dashboard.NewMonitoringDashboard("BitAccretion", t, providerGraph)
+	k.d, dErr = dashboard.NewMonitoringDashboard("BitAccretion", t, g)
 	if dErr != nil {
 		return dErr
 	}
@@ -80,11 +80,8 @@ func (k *Kernel) initDashboard(ctx context.Context, t terminalapi.Terminal) erro
 // dashboardUpdate ask provider to collect new data and push update to widgets
 func (k *Kernel) dashboardUpdate(ctx context.Context, delay time.Duration) {
 	isNeedToFetch := true
-	log.Println("Executing background dashboard updates...")
-
 	ticker := time.NewTicker(delay)
 	defer ticker.Stop()
-
 	for {
 		select {
 		case <-ticker.C:
@@ -95,7 +92,7 @@ func (k *Kernel) dashboardUpdate(ctx context.Context, delay time.Duration) {
 			isNeedToFetch = false
 			k.l.Normal("Requesting provider to get new data update...")
 
-			providerGraph, providerGraphErr := k.p.DispatchMonitoredData()
+			providerGraph, providerGraphErr := k.p.FetchNewData()
 			if providerGraphErr != nil {
 				k.l.Error(providerGraphErr.Error())
 				return
@@ -142,7 +139,7 @@ func (k *Kernel) Run(t terminalapi.Terminal) error {
 		t,
 		k.d.TerminalContainer,
 		termdash.KeyboardSubscriber(quitter),
-		termdash.RedrawInterval(500*time.Millisecond),
+		termdash.RedrawInterval(1*time.Second),
 	)
 	if termErr != nil {
 		return termErr

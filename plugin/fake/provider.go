@@ -22,9 +22,14 @@ func (f *FakeProvider) Boot() error {
 	return nil
 }
 
-// DispatchMonitoredData with dummy data
-func (f *FakeProvider) DispatchMonitoredData() (model.Graph, error) {
-	return GetStubGraph(), nil
+// DispatchGraph prepared graph of monitored systems
+func (f *FakeProvider) DispatchGraph() (model.Graph, error) {
+	return GetStubGraph(false), nil
+}
+
+// FetchNewData with dummy data
+func (f *FakeProvider) FetchNewData() (model.Graph, error) {
+	return GetStubGraph(true), nil
 }
 
 // ProvideHealth immortal
@@ -38,7 +43,7 @@ func NewProvider() provider.IProvider {
 }
 
 // GetStubNodes generated dummy nodes with data
-func GetStubNodes() []*model.Node {
+func GetStubNodes(isRandom bool) []*model.Node {
 	sysNames := []string{
 		"Lipstick", "Steward",
 		"Siege Engine", "Homesick",
@@ -53,10 +58,13 @@ func GetStubNodes() []*model.Node {
 		nodes[i] = &model.Node{
 			Name:   sysNames[i],
 			Health: getRandomHealthState(),
-			Metric: model.SystemMetric{
+		}
+
+		if isRandom {
+			nodes[i].Metric = model.SystemMetric{
 				RequestCount: float32(rand.Intn(10000)),
 				ErrorCount:   float32(rand.Intn(50)),
-			},
+			}
 		}
 	}
 
@@ -64,10 +72,10 @@ func GetStubNodes() []*model.Node {
 }
 
 // GetStubGraph generated dummy graph with nodes
-func GetStubGraph() model.Graph {
+func GetStubGraph(isRandom bool) model.Graph {
 	g := model.NewGraph()
 
-	for _, n := range GetStubNodes() {
+	for _, n := range GetStubNodes(isRandom) {
 		g.AddVertex(model.VertexName(n.Name), n)
 	}
 
