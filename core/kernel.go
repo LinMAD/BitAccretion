@@ -1,4 +1,4 @@
-package kernel
+package core
 
 import (
 	"context"
@@ -108,7 +108,7 @@ func (k *Kernel) dashboardUpdate(ctx context.Context, delay time.Duration) {
 
 // Run main process to handle dashboard and update it with data from provider
 func (k *Kernel) Run(t terminalapi.Terminal) error {
-	log.Println("Initializing kernel...")
+	log.Println("Initializing core...")
 
 	ctx, cancel := context.WithCancel(context.Background())
 	providerErr := k.initProvider(ctx)
