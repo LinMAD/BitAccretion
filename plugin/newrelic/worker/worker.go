@@ -2,9 +2,9 @@ package worker
 
 import (
 	"fmt"
-	"github.com/LinMAD/BitAccretion/logger"
 	"sync"
 
+	"github.com/LinMAD/BitAccretion/logger"
 	"github.com/LinMAD/BitAccretion/model"
 	"github.com/LinMAD/BitAccretion/plugin/newrelic/client"
 )

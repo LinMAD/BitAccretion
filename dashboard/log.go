@@ -24,7 +24,7 @@ func (l *loggerHandler) SetMode(level logger.LevelOfLog) {
 // Debug messages
 func (l *loggerHandler) Debug(msg string) {
 	if l.lvl == logger.DebugLog {
-		l.widget.WriteToEventLog("Debug: " + msg, cell.ColorWhite)
+		l.widget.WriteToEventLog("Debug: "+msg, cell.ColorWhite)
 	}
 }
 

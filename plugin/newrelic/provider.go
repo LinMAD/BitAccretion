@@ -2,10 +2,10 @@ package main
 
 import (
 	"encoding/json"
-	"github.com/LinMAD/BitAccretion/logger"
 	"os"
 	"sync"
 
+	"github.com/LinMAD/BitAccretion/logger"
 	"github.com/LinMAD/BitAccretion/model"
 	"github.com/LinMAD/BitAccretion/plugin/newrelic/worker"
 	"github.com/LinMAD/BitAccretion/provider"

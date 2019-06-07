@@ -32,7 +32,7 @@ func NewRelicClient(APIKey string) *NRelicClient {
 	errorCodes[500] = "New Relic API unavailable"
 
 	return &NRelicClient{
-		httpClient: &http.Client{Timeout: 10 * time.Second},
+		httpClient:      &http.Client{Timeout: 10 * time.Second},
 		key:             APIKey,
 		relicErrorCodes: errorCodes,
 	}

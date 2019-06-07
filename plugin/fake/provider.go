@@ -1,9 +1,9 @@
 package main
 
 import (
-	"github.com/LinMAD/BitAccretion/logger"
 	"math/rand"
 
+	"github.com/LinMAD/BitAccretion/logger"
 	"github.com/LinMAD/BitAccretion/model"
 	"github.com/LinMAD/BitAccretion/provider"
 )
