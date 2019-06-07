@@ -8,6 +8,8 @@ const (
 	DebugLog LevelOfLog = iota
 	// NormalLog allows write to errors and normal log but debug will be excluded
 	NormalLog
+	// ErrorLog write only from errors
+	ErrorLog
 )
 
 // ILogger basic interface

@@ -35,5 +35,7 @@ func (l *loggerHandler) Normal(msg string) {
 
 // Error events messages
 func (l *loggerHandler) Error(msg string) {
-	l.widget.WriteToEventLog(msg, cell.ColorRed)
+	if l.lvl == logger.ErrorLog {
+		l.widget.WriteToEventLog(msg, cell.ColorRed)
+	}
 }

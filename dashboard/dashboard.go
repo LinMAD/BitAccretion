@@ -119,10 +119,8 @@ func (m *MonitoringDashboard) createLayout(dashboardName string, t *terminalapi.
 	return err
 }
 
-// TODO Add config of dashboard to reduce arguments in function
-
 // NewMonitoringDashboard constructor, will prepare widgets, subscriber's and dependencies
-func NewMonitoringDashboard(dashboardName string, t terminalapi.Terminal, graph model.Graph) (*MonitoringDashboard, error) {
+func NewMonitoringDashboard(dashboardName string, logLvl logger.LevelOfLog, t terminalapi.Terminal, graph model.Graph) (*MonitoringDashboard, error) {
 	termDash := &MonitoringDashboard{widgetCollection: &widgets{}}
 
 	initErr := termDash.initWidgets(graph.GetAllVertices())
@@ -136,8 +134,7 @@ func NewMonitoringDashboard(dashboardName string, t terminalapi.Terminal, graph 
 	}
 
 	// Add dependencies
-	// TODO Add log lvl to config
-	termDash.EventLogger = &loggerHandler{lvl: logger.NormalLog, widget: termDash.widgetCollection.eventLog}
+	termDash.EventLogger = &loggerHandler{lvl: logLvl, widget: termDash.widgetCollection.eventLog}
 	termDash.observer = event.NewDashboardObserver(termDash.EventLogger)
 
 	// Register widgets to be observable for graph updates

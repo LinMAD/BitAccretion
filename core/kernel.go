@@ -63,7 +63,7 @@ func (k *Kernel) initDashboard(ctx context.Context, t terminalapi.Terminal) erro
 
 	log.Println("Creating terminal dashboard UI...")
 	var dErr error
-	k.d, dErr = dashboard.NewMonitoringDashboard("BitAccretion", t, g)
+	k.d, dErr = dashboard.NewMonitoringDashboard("BitAccretion", k.c.LogLevel, t, g)
 	if dErr != nil {
 		return dErr
 	}
@@ -131,7 +131,6 @@ func (k *Kernel) Run(t terminalapi.Terminal) error {
 
 	fmt.Print("\033[H\033[2J") // Clean terminal screen from any artifacts
 
-	// TODO Time terminal UI redraw must be used from Kernel cfg
 	termErr := termdash.Run(
 		ctx,
 		t,

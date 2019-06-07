@@ -62,7 +62,7 @@ func (txt *TextWidgetHandler) GetName() string {
 func (txt *TextWidgetHandler) WriteToEventLog(msg string, color cell.Color) {
 	writeErr := txt.t.Write(fmt.Sprintf("|%s| %s\n", time.Now().Format(time.Stamp), msg), text.WriteCellOpts(cell.FgColor(color)))
 	if writeErr != nil {
-		panic(writeErr) // TODO Think how to handle that issue, worst case scenario
+		panic(writeErr)
 	}
 }
 
