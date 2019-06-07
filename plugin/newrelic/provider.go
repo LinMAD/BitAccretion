@@ -111,6 +111,7 @@ func (nr *ProviderNewRelic) FetchNewData(log logger.ILogger) (model.Graph, error
 				app.MetaData.(AppDetails).RelicMetrics,
 			)
 
+			app.Metric = model.SystemMetric{}
 			for _, host := range fetchedMetrics.HostMetrics {
 				app.Metric.RequestCount += host.Metrics.RequestCount
 				app.Metric.ErrorCount += host.Metrics.ErrorCount
