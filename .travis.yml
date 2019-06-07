@@ -3,17 +3,19 @@ sudo: false
 language: go
 
 go:
-  - 1.10.x
+  - 1.12.x
+  - stable
 
 before_script:
-  - make prepare
+  - go get -u golang.org/x/lint/golint
   - make golint
   - make gotest
 
 script:
-  - make js
-  - make com_core
+  - make build
+  - make plugin_fake
+  - make plugin_relic
 
-cache:
-  directories:
-    - node_modules
+env:
+  global:
+  - GO111MODULE=on

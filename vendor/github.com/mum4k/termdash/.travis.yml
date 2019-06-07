@@ -1,0 +1,17 @@
+language: go
+go:
+        - 1.10.x
+        - 1.11.x
+        - 1.12.x
+        - stable
+script:
+        - go get -t ./...
+        - go get -u golang.org/x/lint/golint
+        - go test ./...
+        - go test -race ./...
+        - go vet ./...
+        - diff -u <(echo -n) <(gofmt -d -s .)
+        - diff -u <(echo -n) <(./internal/scripts/autogen_licences.sh .)
+        - diff -u <(echo -n) <(golint ./...)
+after_success:
+        - ./internal/scripts/coverage.sh
