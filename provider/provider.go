@@ -1,6 +1,9 @@
 package provider
 
-import "github.com/LinMAD/BitAccretion/model"
+import (
+	"github.com/LinMAD/BitAccretion/logger"
+	"github.com/LinMAD/BitAccretion/model"
+)
 
 // IProvider general interface to provide data for dashboard
 type IProvider interface {
@@ -12,7 +15,7 @@ type IProvider interface {
 	// DispatchGraph must prepared graph of monitoring
 	DispatchGraph() (model.Graph, error)
 	// FetchNewData executes provider to get graph with data
-	FetchNewData() (model.Graph, error)
+	FetchNewData(l logger.ILogger) (model.Graph, error)
 	// ProvideHealth must provide if plugin still can work
 	// example API not reachable or plugin has errors and it must be restarted
 	ProvideHealth() model.HealthState

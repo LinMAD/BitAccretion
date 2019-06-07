@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/LinMAD/BitAccretion/logger"
 	"math/rand"
 
 	"github.com/LinMAD/BitAccretion/model"
@@ -28,7 +29,9 @@ func (f *FakeProvider) DispatchGraph() (model.Graph, error) {
 }
 
 // FetchNewData with dummy data
-func (f *FakeProvider) FetchNewData() (model.Graph, error) {
+func (f *FakeProvider) FetchNewData(log logger.ILogger) (model.Graph, error) {
+	log.Normal("Generating fake data...")
+
 	return GetStubGraph(true), nil
 }
 

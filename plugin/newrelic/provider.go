@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"github.com/LinMAD/BitAccretion/logger"
 	"os"
 	"sync"
 
@@ -84,7 +85,7 @@ func (nr *ProviderNewRelic) DispatchGraph() (model.Graph, error) {
 }
 
 // FetchNewData returns latest assembled graph
-func (nr *ProviderNewRelic) FetchNewData() (model.Graph, error) {
+func (nr *ProviderNewRelic) FetchNewData(log logger.ILogger) (model.Graph, error) {
 	g := nr.prepareGraph()
 
 	appList := g.GetAllVertices()
@@ -105,6 +106,7 @@ func (nr *ProviderNewRelic) FetchNewData() (model.Graph, error) {
 
 			// Get base application data
 			fetchedMetrics := nr.worker.CollectApplicationHostMetrics(
+				log,
 				app.MetaData.(AppDetails).ID,
 				app.MetaData.(AppDetails).RelicMetrics,
 			)

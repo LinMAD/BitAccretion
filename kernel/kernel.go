@@ -92,7 +92,7 @@ func (k *Kernel) dashboardUpdate(ctx context.Context, delay time.Duration) {
 			isNeedToFetch = false
 			k.l.Normal("Requesting provider to get new data update...")
 
-			providerGraph, providerGraphErr := k.p.FetchNewData()
+			providerGraph, providerGraphErr := k.p.FetchNewData(k.l)
 			if providerGraphErr != nil {
 				k.l.Error(providerGraphErr.Error())
 				return
@@ -120,6 +120,7 @@ func (k *Kernel) Run(t terminalapi.Terminal) error {
 	if dashErr != nil {
 		return dashErr
 	}
+
 	log.Println("Kernel ready...")
 	log.Println("Rendering terminal UI...")
 	quitter := func(k *terminalapi.Keyboard) {

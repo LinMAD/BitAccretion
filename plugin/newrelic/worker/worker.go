@@ -2,6 +2,8 @@ package worker
 
 import (
 	"fmt"
+	"github.com/LinMAD/BitAccretion/logger"
+	"sync"
 
 	"github.com/LinMAD/BitAccretion/model"
 	"github.com/LinMAD/BitAccretion/plugin/newrelic/client"
@@ -40,29 +42,44 @@ func NewRelicWorker(APIKey string) (*RelicWorker, error) {
 }
 
 // CollectApplicationHostMetrics returns all collected metrics for application
-func (w *RelicWorker) CollectApplicationHostMetrics(appID string, metrics []string) *FetchedNewRelicData {
+func (w *RelicWorker) CollectApplicationHostMetrics(log logger.ILogger, appID string, metrics []string) *FetchedNewRelicData {
 	fetchedData := &FetchedNewRelicData{}
 	fetchedData.HostMetrics = make([]hostMetricsData, 0)
 
+	log.Debug(fmt.Sprintf("Traversing app ID: %s", appID))
+
 	hosts := w.relicClient.GetApplicationHost(appID)
-	for _, host := range hosts.AppsHosts {
-		hostMetrics := w.relicClient.GetHostMetricData(appID, host.HostID, metrics)
-		metricsData := model.SystemMetric{}
+	hLen := len(hosts.AppsHosts)
 
-		for _, metrics := range hostMetrics.Data.Metrics {
-			for _, rates := range metrics.Timeslices {
-				metricsData.RequestCount += rates.Values.Requests
-				metricsData.ErrorCount += rates.Values.Errors
+	var wg sync.WaitGroup
+	for group := 0; group < hLen; group++ {
+		wg.Add(1)
+
+		go func(group int) {
+			defer wg.Done()
+
+			host := hosts.AppsHosts[group]
+
+			log.Debug(fmt.Sprintf("Collecting data from host id: %d name: %s", host.HostID, host.Host))
+			hostMetrics := w.relicClient.GetHostMetricData(appID, host.HostID, metrics)
+			metricsData := model.SystemMetric{}
+
+			for _, metrics := range hostMetrics.Data.Metrics {
+				for _, rates := range metrics.Timeslices {
+					metricsData.RequestCount += rates.Values.Requests
+					metricsData.ErrorCount += rates.Values.Errors
+				}
 			}
-		}
 
-		hostMetricsData := hostMetricsData{}
-		hostMetricsData.HostName = host.Host
-		hostMetricsData.HostID = host.HostID
-		hostMetricsData.Metrics = metricsData
+			hostMetricsData := hostMetricsData{}
+			hostMetricsData.HostName = host.Host
+			hostMetricsData.HostID = host.HostID
+			hostMetricsData.Metrics = metricsData
 
-		fetchedData.HostMetrics = append(fetchedData.HostMetrics, hostMetricsData)
+			fetchedData.HostMetrics = append(fetchedData.HostMetrics, hostMetricsData)
+		}(group)
 	}
+	wg.Wait()
 
 	return fetchedData
 }

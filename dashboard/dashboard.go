@@ -136,6 +136,7 @@ func NewMonitoringDashboard(dashboardName string, t terminalapi.Terminal, graph 
 	}
 
 	// Add dependencies
+	// TODO Add log lvl to config
 	termDash.EventLogger = &loggerHandler{lvl: logger.NormalLog, widget: termDash.widgetCollection.eventLog}
 	termDash.observer = event.NewDashboardObserver(termDash.EventLogger)
 
