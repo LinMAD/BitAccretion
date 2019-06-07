@@ -5,7 +5,7 @@
 [Project plot on medium](https://medium.com/@artjomnemiro/how-valuable-can-be-visual-monitoring-923e9e865625)
 
 ```text
-TODO Add API to send event logs from plugin
+TODO Restore feature with audio alerts -> plugin for kernel + config
 TODO Add more tests for critical code
 TODO Add system chart how it works
 *TIP
