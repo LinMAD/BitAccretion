@@ -23,11 +23,7 @@ func (bw *BarWidgetHandler) HandleNotifyEvent(e event.UpdateEvent) error {
 	vertices := e.MonitoringGraph.GetAllVertices()
 	l := len(vertices)
 
-	if bw.isOkRequestsToCollect {
-		max = bw.getMaxRequestValue(false, &e.MonitoringGraph)
-	} else {
-		max = bw.getMaxRequestValue(true, &e.MonitoringGraph)
-	}
+	max = bw.getMaxRequestValue(bw.isOkRequestsToCollect, &e.MonitoringGraph)
 
 	// Set new data from metrics in same order as before
 	for i := 0; i < l; i++ {
@@ -58,18 +54,20 @@ func (bw *BarWidgetHandler) GetName() string {
 }
 
 // getMaxRequestValue max value from vertices
-func (bw *BarWidgetHandler) getMaxRequestValue(isErrorsReqs bool, g *model.Graph) int {
+func (bw *BarWidgetHandler) getMaxRequestValue(isOkReq bool, g *model.Graph) int {
 	max := 1
 	allVertices := g.GetAllVertices()
 
 	for i := 0; i < len(allVertices); i++ {
-		if isErrorsReqs && max < int(allVertices[i].Metric.ErrorCount) {
-			max = int(allVertices[i].Metric.ErrorCount)
+		vertex := allVertices[i]
+
+		if isOkReq && max < int(vertex.Metric.RequestCount) {
+			max = int(vertex.Metric.RequestCount)
 			continue
 		}
 
-		if max < int(allVertices[i].Metric.RequestCount) {
-			max = int(allVertices[i].Metric.RequestCount)
+		if max < int(vertex.Metric.ErrorCount) {
+			max = int(vertex.Metric.ErrorCount)
 		}
 	}
 

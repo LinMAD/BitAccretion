@@ -54,8 +54,8 @@ func GetStubNodes() []*model.Node {
 			Name:   sysNames[i],
 			Health: getRandomHealthState(),
 			Metric: model.SystemMetric{
-				RequestCount: float32(rand.Intn(1000)),
-				ErrorCount:   float32(rand.Intn(1000)),
+				RequestCount: float32(rand.Intn(10000)),
+				ErrorCount:   float32(rand.Intn(50)),
 			},
 		}
 	}

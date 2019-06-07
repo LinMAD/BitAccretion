@@ -13,6 +13,8 @@ before_script:
 
 script:
   - make build
+  - make plugin_fake
+  - make plugin_relic
 
 env:
   global:
