@@ -3,17 +3,16 @@
 
 ## Lint go files
 golint:
-	find . -type d -not -path "./.git/*" | xargs -L 1 golint
+	find . -type d -not -path "./.git/*" -not -path "./vendor/*" | xargs -L 1 golint
 
 ## Run tests for Go
 gotest:
-	- go test ./...
-	- go test -race ./...
+	- go test `go list ./... | grep -v /vendor/`
+	- go test -race `go list ./... | grep -v /vendor/`
 
 ## Install project dependencies
 prepare:
 	go get -u golang.org/x/lint/golint
-	go get -u github.com/golang/dep/cmd/dep
 	go mod download
 
 ## Compile go code

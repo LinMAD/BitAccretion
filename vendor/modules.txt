@@ -1,0 +1,45 @@
+# github.com/davecgh/go-spew v1.1.0
+github.com/davecgh/go-spew/spew
+# github.com/mattn/go-runewidth v0.0.4
+github.com/mattn/go-runewidth
+# github.com/mum4k/termdash v0.9.1
+github.com/mum4k/termdash/terminal/termbox
+github.com/mum4k/termdash/cell
+github.com/mum4k/termdash/container
+github.com/mum4k/termdash/linestyle
+github.com/mum4k/termdash/terminal/terminalapi
+github.com/mum4k/termdash/widgets/barchart
+github.com/mum4k/termdash/widgets/linechart
+github.com/mum4k/termdash/widgets/segmentdisplay
+github.com/mum4k/termdash/widgets/text
+github.com/mum4k/termdash
+github.com/mum4k/termdash/internal/event/eventqueue
+github.com/mum4k/termdash/keyboard
+github.com/mum4k/termdash/mouse
+github.com/mum4k/termdash/align
+github.com/mum4k/termdash/internal/alignfor
+github.com/mum4k/termdash/internal/area
+github.com/mum4k/termdash/internal/button
+github.com/mum4k/termdash/internal/canvas
+github.com/mum4k/termdash/internal/draw
+github.com/mum4k/termdash/internal/event
+github.com/mum4k/termdash/widgetapi
+github.com/mum4k/termdash/internal/canvas/braille
+github.com/mum4k/termdash/internal/numbers
+github.com/mum4k/termdash/widgets/linechart/internal/axes
+github.com/mum4k/termdash/widgets/linechart/internal/zoom
+github.com/mum4k/termdash/internal/attrrange
+github.com/mum4k/termdash/internal/segdisp/sixteen
+github.com/mum4k/termdash/internal/canvas/buffer
+github.com/mum4k/termdash/internal/runewidth
+github.com/mum4k/termdash/internal/wrap
+github.com/mum4k/termdash/internal/numbers/trig
+github.com/mum4k/termdash/internal/segdisp/segment
+# github.com/nsf/termbox-go v0.0.0-20190325093121-288510b9734e
+github.com/nsf/termbox-go
+# github.com/pmezard/go-difflib v1.0.0
+github.com/pmezard/go-difflib/difflib
+# github.com/stretchr/testify v1.3.0
+github.com/stretchr/testify/assert
+github.com/stretchr/testify/suite
+github.com/stretchr/testify/require

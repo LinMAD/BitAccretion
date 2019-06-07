@@ -7,7 +7,7 @@ go:
   - stable
 
 before_script:
-  - make prepare
+  - go get -u golang.org/x/lint/golint
   - make golint
   - make gotest
 
