@@ -10,6 +10,7 @@ import (
 	"github.com/LinMAD/BitAccretion/dashboard"
 	"github.com/LinMAD/BitAccretion/event"
 	"github.com/LinMAD/BitAccretion/logger"
+	"github.com/LinMAD/BitAccretion/model"
 	"github.com/LinMAD/BitAccretion/provider"
 	"github.com/mum4k/termdash"
 	"github.com/mum4k/termdash/terminal/terminalapi"
@@ -17,6 +18,7 @@ import (
 
 // Kernel core of whole application it's managing states and data communications
 type Kernel struct {
+	c *model.Config
 	d *dashboard.MonitoringDashboard
 	p provider.IProvider
 	o event.IObserver
@@ -24,12 +26,8 @@ type Kernel struct {
 }
 
 // NewKernel of monitoring
-func NewKernel(dataProvider provider.IProvider) *Kernel {
-	k := &Kernel{
-		p: dataProvider,
-	}
-
-	return k
+func NewKernel(dataProvider provider.IProvider, cfg *model.Config) *Kernel {
+	return &Kernel{c: cfg, p: dataProvider}
 }
 
 //initProvider for usages
@@ -129,8 +127,7 @@ func (k *Kernel) Run(t terminalapi.Terminal) error {
 		}
 	}
 
-	// TODO Time update must be used from Kernel cfg
-	go k.dashboardUpdate(ctx, 1*time.Second)
+	go k.dashboardUpdate(ctx, time.Duration(k.c.SurveyIntervalSec)*time.Second)
 
 	fmt.Print("\033[H\033[2J") // Clean terminal screen from any artifacts
 
@@ -140,7 +137,7 @@ func (k *Kernel) Run(t terminalapi.Terminal) error {
 		t,
 		k.d.TerminalContainer,
 		termdash.KeyboardSubscriber(quitter),
-		termdash.RedrawInterval(1*time.Second),
+		termdash.RedrawInterval(time.Duration(k.c.InterfaceUpdateIntervalSec)*time.Second),
 	)
 	if termErr != nil {
 		return termErr

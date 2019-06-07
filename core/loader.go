@@ -1,16 +1,19 @@
 package core
 
 import (
+	"encoding/json"
 	"fmt"
-	"github.com/LinMAD/BitAccretion/provider"
+	"github.com/LinMAD/BitAccretion/model"
 	"os"
 	"path"
 	"plugin"
+
+	"github.com/LinMAD/BitAccretion/provider"
 )
 
 const (
-	config                     = "config.json"
-	pluginProvider             = "provider.so"
+	configFile                 = "config.json"
+	pluginProviderFile         = "provider.so"
 	pluginProviderMainFunction = "NewProvider"
 )
 
@@ -29,9 +32,27 @@ func init() {
 	}
 }
 
+// LoadConfig resolve core settings
+func LoadConfig() (*model.Config, error) {
+	var config model.Config
+	c, cErr := os.Open(path.Join(wd, configFile))
+	if cErr != nil {
+		return nil, fmt.Errorf(cErr.Error())
+	}
+	defer c.Close()
+
+	jsonParser := json.NewDecoder(c)
+	parseErr := jsonParser.Decode(&config)
+	if parseErr != nil {
+		return nil, fmt.Errorf(parseErr.Error())
+	}
+
+	return &config, nil
+}
+
 // LoadProviderPlugin resolve data provider plugin
 func LoadProviderPlugin() (provider.IProvider, error) {
-	mod, modErr := plugin.Open(path.Join(wd, pluginProvider))
+	mod, modErr := plugin.Open(path.Join(wd, pluginProviderFile))
 	if modErr != nil {
 		return nil, fmt.Errorf("unable to open plugin provider.so, error: " + modErr.Error())
 	}

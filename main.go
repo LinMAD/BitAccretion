@@ -6,6 +6,11 @@ import (
 )
 
 func main() {
+	c, cErr := core.LoadConfig()
+	if cErr != nil {
+		panic(cErr)
+	}
+
 	p, pErr := core.LoadProviderPlugin()
 	if pErr != nil {
 		panic(pErr)
@@ -17,7 +22,7 @@ func main() {
 	}
 	defer t.Close()
 
-	kErr := core.NewKernel(p).Run(t)
+	kErr := core.NewKernel(p, c).Run(t)
 	if kErr != nil {
 		panic(kErr)
 	}
