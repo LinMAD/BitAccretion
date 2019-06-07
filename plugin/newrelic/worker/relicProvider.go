@@ -51,8 +51,8 @@ func (w *RelicWorker) CollectApplicationHostMetrics(appID string, metrics []stri
 
 		for _, metrics := range hostMetrics.Data.Metrics {
 			for _, rates := range metrics.Timeslices {
-				metricsData.RequestCount += int(rates.Values.Requests)
-				metricsData.ErrorCount += int(rates.Values.Errors)
+				metricsData.RequestCount += rates.Values.Requests
+				metricsData.ErrorCount += rates.Values.Errors
 			}
 		}
 

@@ -1,8 +1,6 @@
 package provider
 
-import (
-	"github.com/LinMAD/BitAccretion/model"
-)
+import "github.com/LinMAD/BitAccretion/model"
 
 // IProvider general interface to provide data for dashboard
 type IProvider interface {

@@ -57,7 +57,7 @@ func (k *Kernel) initProvider(ctx context.Context) error {
 // initDashboard to display monitored system data
 func (k *Kernel) initDashboard(ctx context.Context, t terminalapi.Terminal) error {
 	// TODO Can be added provider name to dashboard, interface update required
-	log.Println("Fetching first data from provider...")
+	log.Println("Fetching data graph from provider...")
 	providerGraph, providerGraphErr := k.p.DispatchMonitoredData()
 	if providerGraphErr != nil {
 		return fmt.Errorf("provider dispatch monitoring data failed, error: %s", providerGraphErr.Error())
@@ -79,6 +79,7 @@ func (k *Kernel) initDashboard(ctx context.Context, t terminalapi.Terminal) erro
 
 // dashboardUpdate ask provider to collect new data and push update to widgets
 func (k *Kernel) dashboardUpdate(ctx context.Context, delay time.Duration) {
+	isNeedToFetch := true
 	log.Println("Executing background dashboard updates...")
 
 	ticker := time.NewTicker(delay)
@@ -87,6 +88,11 @@ func (k *Kernel) dashboardUpdate(ctx context.Context, delay time.Duration) {
 	for {
 		select {
 		case <-ticker.C:
+			if isNeedToFetch == false {
+				continue
+			}
+
+			isNeedToFetch = false
 			k.l.Normal("Requesting provider to get new data update...")
 
 			providerGraph, providerGraphErr := k.p.DispatchMonitoredData()
@@ -96,6 +102,7 @@ func (k *Kernel) dashboardUpdate(ctx context.Context, delay time.Duration) {
 			}
 
 			k.o.NotifySubscribers(event.UpdateEvent{MonitoringGraph: providerGraph})
+			isNeedToFetch = true
 		case <-ctx.Done():
 			return
 		}
@@ -117,7 +124,7 @@ func (k *Kernel) Run(t terminalapi.Terminal) error {
 		return dashErr
 	}
 	log.Println("Kernel ready...")
-
+	log.Println("Rendering terminal UI...")
 	quitter := func(k *terminalapi.Keyboard) {
 		if k.Key == 'q' || k.Key == 'Q' {
 			cancel()
@@ -127,7 +134,6 @@ func (k *Kernel) Run(t terminalapi.Terminal) error {
 	// TODO Time update must be used from Kernel cfg
 	go k.dashboardUpdate(ctx, 1*time.Second)
 
-	log.Println("Rendering terminal UI...")
 	fmt.Print("\033[H\033[2J") // Clean terminal screen from any artifacts
 
 	// TODO Time terminal UI redraw must be used from Kernel cfg
@@ -136,7 +142,7 @@ func (k *Kernel) Run(t terminalapi.Terminal) error {
 		t,
 		k.d.TerminalContainer,
 		termdash.KeyboardSubscriber(quitter),
-		termdash.RedrawInterval(1*time.Second),
+		termdash.RedrawInterval(500*time.Millisecond),
 	)
 	if termErr != nil {
 		return termErr

@@ -16,6 +16,8 @@ type NRConfig struct {
 	APIKey string `json:"api_key"`
 	// APPSets to survey in NewRelic
 	APPSets []APPSet `json:"app_sets"`
+	// HealthSensitivity conversion to mark health of vertex
+	HealthSensitivity model.HealthSensitivity `json:"health_sensitivity"`
 }
 
 // APPSet registered in New Relic
@@ -88,7 +90,7 @@ func (nr *ProviderNewRelic) DispatchMonitoredData() (model.Graph, error) {
 	for w = 0; w < appCount; w++ {
 		wg.Add(1)
 
-		go func(w int8, appList []*model.Node) {
+		go func(w int8) {
 			defer wg.Done()
 
 			app := appList[w]
@@ -106,7 +108,9 @@ func (nr *ProviderNewRelic) DispatchMonitoredData() (model.Graph, error) {
 				app.Metric.RequestCount += host.Metrics.RequestCount
 				app.Metric.ErrorCount += host.Metrics.ErrorCount
 			}
-		}(w, appList)
+
+			app.Health = nr.getMetricHealth(&app.Metric)
+		}(w)
 	}
 	wg.Wait()
 
@@ -139,6 +143,18 @@ func (nr *ProviderNewRelic) prepareGraph() (g *model.Graph) {
 	}
 
 	return
+}
+
+// getMetricHealth return node health status by given metrics
+func (nr *ProviderNewRelic) getMetricHealth(m *model.SystemMetric) model.HealthState {
+	// Define node health by metrics
+	if int(m.ErrorCount) > nr.Config.HealthSensitivity.Danger {
+		return model.HealthCritical
+	} else if int(m.ErrorCount) > nr.Config.HealthSensitivity.Warning {
+		return model.HealthWarning
+	} else {
+		return model.HealthNormal
+	}
 }
 
 // NewProvider returns instance with implemented interface

@@ -12,6 +12,8 @@ type BarWidgetHandler struct {
 	name                  string
 	isOkRequestsToCollect bool
 	barChart              *barchart.BarChart
+	// barChartMap mapping relation between graph and bar chart, order is sensitive
+	barChartMap map[string]*model.SystemMetric
 }
 
 // HandleNotifyEvent update bar chat data
@@ -27,16 +29,27 @@ func (bw *BarWidgetHandler) HandleNotifyEvent(e event.UpdateEvent) error {
 		max = bw.getMaxRequestValue(true, &e.MonitoringGraph)
 	}
 
-	data := make([]int, l)
+	// Set new data from metrics in same order as before
 	for i := 0; i < l; i++ {
 		if bw.isOkRequestsToCollect {
-			data[i] = vertices[i].Metric.RequestCount
+			bw.barChartMap[vertices[i].Name] = &vertices[i].Metric
 		} else {
-			data[i] = vertices[i].Metric.ErrorCount
+			bw.barChartMap[vertices[i].Name] = &vertices[i].Metric
 		}
 	}
 
-	return bw.barChart.Values(data, max)
+	i := 0
+	bar := make([]int, l)
+	for _, m := range bw.barChartMap {
+		if bw.isOkRequestsToCollect {
+			bar[i] = int(m.RequestCount)
+		} else {
+			bar[i] = int(m.ErrorCount)
+		}
+		i++
+	}
+
+	return bw.barChart.Values(bar, max)
 }
 
 // GetName of widget handler
@@ -50,13 +63,13 @@ func (bw *BarWidgetHandler) getMaxRequestValue(isErrorsReqs bool, g *model.Graph
 	allVertices := g.GetAllVertices()
 
 	for i := 0; i < len(allVertices); i++ {
-		if isErrorsReqs && max < allVertices[i].Metric.ErrorCount {
-			max = allVertices[i].Metric.ErrorCount
+		if isErrorsReqs && max < int(allVertices[i].Metric.ErrorCount) {
+			max = int(allVertices[i].Metric.ErrorCount)
 			continue
 		}
 
-		if max < allVertices[i].Metric.RequestCount {
-			max = allVertices[i].Metric.RequestCount
+		if max < int(allVertices[i].Metric.RequestCount) {
+			max = int(allVertices[i].Metric.RequestCount)
 		}
 	}
 
@@ -68,17 +81,24 @@ func NewBarWidget(name string, barColor cell.Color, isOkReqs bool, nodes []*mode
 	sysCount := len(nodes)
 	sysNames := make([]string, sysCount)
 	sysBarColors := make([]cell.Color, sysCount)
-	sysValBarColors := make([]cell.Color, sysCount)
+	sysBarValColors := make([]cell.Color, sysCount)
+	sysBarValMap := make(map[string]*model.SystemMetric)
 
 	for i := 0; i < sysCount; i++ {
-		sysNames[i] = nodes[i].Name
 		sysBarColors[i] = barColor
-		sysValBarColors[i] = cell.ColorWhite
+		sysBarValColors[i] = cell.ColorWhite
+		sysBarValMap[nodes[i].Name] = nil
+	}
+
+	i := 0
+	for n := range sysBarValMap {
+		sysNames[i] = n
+		i++
 	}
 
 	sysBar, sysBarErr := barchart.New(
 		barchart.BarColors(sysBarColors),
-		barchart.ValueColors(sysValBarColors),
+		barchart.ValueColors(sysBarValColors),
 		barchart.ShowValues(),
 		barchart.Labels(sysNames),
 	)
@@ -90,6 +110,7 @@ func NewBarWidget(name string, barColor cell.Color, isOkReqs bool, nodes []*mode
 		name:                  name,
 		barChart:              sysBar,
 		isOkRequestsToCollect: isOkReqs,
+		barChartMap:           sysBarValMap,
 	}
 
 	return widget, nil
