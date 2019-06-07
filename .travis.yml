@@ -4,6 +4,7 @@ language: go
 
 go:
   - 1.12.x
+  - stable
 
 before_script:
   - make prepare
@@ -13,3 +14,6 @@ before_script:
 script:
   - make build
 
+env:
+  global:
+  - GO111MODULE=on
