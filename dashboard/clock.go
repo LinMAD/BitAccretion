@@ -39,7 +39,7 @@ func (c *ClockWidgetHandler) runClock() {
 			}
 
 			if err := c.sdClock.Write(chunks); err != nil {
-				panic(err) // TODO Handle in grace way, log or ignore
+				panic(err)
 			}
 		}
 	}

@@ -1,4 +1,4 @@
-package kernel
+package core
 
 import (
 	"context"
@@ -10,6 +10,7 @@ import (
 	"github.com/LinMAD/BitAccretion/dashboard"
 	"github.com/LinMAD/BitAccretion/event"
 	"github.com/LinMAD/BitAccretion/logger"
+	"github.com/LinMAD/BitAccretion/model"
 	"github.com/LinMAD/BitAccretion/provider"
 	"github.com/mum4k/termdash"
 	"github.com/mum4k/termdash/terminal/terminalapi"
@@ -17,6 +18,7 @@ import (
 
 // Kernel core of whole application it's managing states and data communications
 type Kernel struct {
+	c *model.Config
 	d *dashboard.MonitoringDashboard
 	p provider.IProvider
 	o event.IObserver
@@ -24,12 +26,8 @@ type Kernel struct {
 }
 
 // NewKernel of monitoring
-func NewKernel(dataProvider provider.IProvider) *Kernel {
-	k := &Kernel{
-		p: dataProvider,
-	}
-
-	return k
+func NewKernel(dataProvider provider.IProvider, cfg *model.Config) *Kernel {
+	return &Kernel{c: cfg, p: dataProvider}
 }
 
 //initProvider for usages
@@ -65,7 +63,7 @@ func (k *Kernel) initDashboard(ctx context.Context, t terminalapi.Terminal) erro
 
 	log.Println("Creating terminal dashboard UI...")
 	var dErr error
-	k.d, dErr = dashboard.NewMonitoringDashboard("BitAccretion", t, g)
+	k.d, dErr = dashboard.NewMonitoringDashboard("BitAccretion", k.c.LogLevel, t, g)
 	if dErr != nil {
 		return dErr
 	}
@@ -108,7 +106,7 @@ func (k *Kernel) dashboardUpdate(ctx context.Context, delay time.Duration) {
 
 // Run main process to handle dashboard and update it with data from provider
 func (k *Kernel) Run(t terminalapi.Terminal) error {
-	log.Println("Initializing kernel...")
+	log.Println("Initializing core...")
 
 	ctx, cancel := context.WithCancel(context.Background())
 	providerErr := k.initProvider(ctx)
@@ -129,18 +127,16 @@ func (k *Kernel) Run(t terminalapi.Terminal) error {
 		}
 	}
 
-	// TODO Time update must be used from Kernel cfg
-	go k.dashboardUpdate(ctx, 1*time.Second)
+	go k.dashboardUpdate(ctx, time.Duration(k.c.SurveyIntervalSec)*time.Second)
 
 	fmt.Print("\033[H\033[2J") // Clean terminal screen from any artifacts
 
-	// TODO Time terminal UI redraw must be used from Kernel cfg
 	termErr := termdash.Run(
 		ctx,
 		t,
 		k.d.TerminalContainer,
 		termdash.KeyboardSubscriber(quitter),
-		termdash.RedrawInterval(1*time.Second),
+		termdash.RedrawInterval(time.Duration(k.c.InterfaceUpdateIntervalSec)*time.Second),
 	)
 	if termErr != nil {
 		return termErr
