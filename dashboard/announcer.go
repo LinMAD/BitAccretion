@@ -15,10 +15,11 @@ const maxTextHistory = 100
 
 // AnnouncerHandler for dashboard
 type AnnouncerHandler struct {
-	name           string
-	t              *text.Text
-	s              extension.ISound
-	historyCounter int8
+	name                 string
+	t                    *text.Text
+	s                    extension.ISound
+	historyCounter       int8
+	soundAlertDelay      time.Duration
 	lastSoundTriggerTime time.Time
 }
 
@@ -89,19 +90,30 @@ func (anon *AnnouncerHandler) playAlter(name string) {
 	}
 
 	now := time.Now().UTC()
-	_ = now.Sub(anon.lastSoundTriggerTime)
+	passedTime := now.Sub(anon.lastSoundTriggerTime)
 
-	anon.WriteToEventLog(fmt.Sprintf("Playing alert sound for %s...", name), cell.ColorBlue)
-	anon.s.PlayAlert(model.VertexName(name))
-	anon.lastSoundTriggerTime = now
+	if passedTime >= anon.soundAlertDelay {
+		anon.WriteToEventLog(fmt.Sprintf("Playing alert sound for %s...", name), cell.ColorBlue)
+		anon.s.PlayAlert(model.VertexName(name))
+		anon.lastSoundTriggerTime = now
+	}
 }
 
 // NewAnnouncerWidget creates and returns prepared widget
-func NewAnnouncerWidget(sound extension.ISound, name string) (*AnnouncerHandler, error) {
+func NewAnnouncerWidget(sound extension.ISound, delay int, name string) (*AnnouncerHandler, error) {
 	t, tErr := text.New(text.WrapAtRunes(), text.WrapAtWords(), text.RollContent())
 	if tErr != nil {
 		return nil, tErr
 	}
 
-	return &AnnouncerHandler{name: name, t: t, s: sound, lastSoundTriggerTime: time.Now().UTC()}, nil
+	now := time.Now().UTC()
+
+	return &AnnouncerHandler{
+			name:                 name,
+			t:                    t,
+			s:                    sound,
+			soundAlertDelay:      time.Duration(delay) * time.Minute,
+			lastSoundTriggerTime: now.Add(-42 * time.Hour),
+		},
+		nil
 }

@@ -41,7 +41,7 @@ func (m *MonitoringDashboard) GetName() string {
 }
 
 // initWidgets for dashboard
-func (m *MonitoringDashboard) initWidgets(s extension.ISound, n []*model.Node) (err error) {
+func (m *MonitoringDashboard) initWidgets(s extension.ISound, delay int, n []*model.Node) (err error) {
 	m.widgetCollection.reqSuccessful, err = NewBarWidget("ok_reqs_bar_widget", cell.ColorGreen, true, n)
 	if err != nil {
 		return err
@@ -57,7 +57,7 @@ func (m *MonitoringDashboard) initWidgets(s extension.ISound, n []*model.Node) (
 		return err
 	}
 
-	m.widgetCollection.eventLog, err = NewAnnouncerWidget(s, "system_error_text_widget")
+	m.widgetCollection.eventLog, err = NewAnnouncerWidget(s, delay, "system_error_text_widget")
 	if err != nil {
 		return err
 	}
@@ -124,7 +124,7 @@ func (m *MonitoringDashboard) createLayout(dashboardName string, t *terminalapi.
 func NewMonitoringDashboard(n string, c *model.Config, s extension.ISound, t terminalapi.Terminal, g model.Graph) (*MonitoringDashboard, error) {
 	termDash := &MonitoringDashboard{widgetCollection: &widgets{}}
 
-	initErr := termDash.initWidgets(s, g.GetAllVertices())
+	initErr := termDash.initWidgets(s, c.SoundAlertDelayMin, g.GetAllVertices())
 	if initErr != nil {
 		return nil, initErr
 	}
