@@ -7,8 +7,8 @@ golint:
 
 ## Run tests for Go
 gotest:
-	- go test `go list ./... | grep -v /vendor/`
-	- go test -race `go list ./... | grep -v /vendor/`
+	- go test `go list ./... | grep -v vendor/ | grep -v extension/sound`
+	- go test -race `go list ./... | grep -v vendor/ | grep -v extension/sound`
 
 ## Install project dependencies
 prepare:
@@ -19,10 +19,14 @@ prepare:
 build: golint gotest
 	go build -o BitAccretion main.go
 
+## Compile sound player
+plugin_sound:
+	go build -buildmode=plugin -o ./sound.so extension/sound/player.go
+
 ## Compile fake provider
-plugin_fake: golint gotest
-	go build -buildmode=plugin -o ./provider.so plugin/fake/provider.go
+plugin_fake:
+	go build -buildmode=plugin -o ./provider.so extension/fake/provider.go
 
 ## Compile new relic provider
-plugin_relic: golint gotest
-	go build -buildmode=plugin -o ./provider.so plugin/newrelic/provider.go
+plugin_relic:
+	go build -buildmode=plugin -o ./provider.so extension/newrelic/provider.go

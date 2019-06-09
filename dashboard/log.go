@@ -8,11 +8,11 @@ import (
 // loggerHandler used to write log events
 type loggerHandler struct {
 	lvl    logger.LevelOfLog
-	widget *TextWidgetHandler
+	widget *AnnouncerHandler
 }
 
 // SetTextWidget where log messages delivered
-func (l *loggerHandler) SetTextWidget(textScreen *TextWidgetHandler) {
+func (l *loggerHandler) SetTextWidget(textScreen *AnnouncerHandler) {
 	l.widget = textScreen
 }
 

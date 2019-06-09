@@ -9,41 +9,42 @@ import (
 
 	"github.com/LinMAD/BitAccretion/dashboard"
 	"github.com/LinMAD/BitAccretion/event"
+	"github.com/LinMAD/BitAccretion/extension"
 	"github.com/LinMAD/BitAccretion/logger"
 	"github.com/LinMAD/BitAccretion/model"
-	"github.com/LinMAD/BitAccretion/provider"
 	"github.com/mum4k/termdash"
 	"github.com/mum4k/termdash/terminal/terminalapi"
 )
 
 // Kernel core of whole application it's managing states and data communications
 type Kernel struct {
+	p extension.IProvider
+	s extension.ISound
 	c *model.Config
 	d *dashboard.MonitoringDashboard
-	p provider.IProvider
 	o event.IObserver
 	l logger.ILogger
 }
 
 // NewKernel of monitoring
-func NewKernel(dataProvider provider.IProvider, cfg *model.Config) *Kernel {
-	return &Kernel{c: cfg, p: dataProvider}
+func NewKernel(dataProvider extension.IProvider, sound extension.ISound, cfg *model.Config) *Kernel {
+	return &Kernel{p: dataProvider, s: sound, c: cfg}
 }
 
 //initProvider for usages
-func (k *Kernel) initProvider(ctx context.Context) error {
+func (k *Kernel) initProvider() error {
 	wd, err := os.Getwd()
 	if err != nil {
 		return fmt.Errorf("could not retrieve working directory, error: %s", err.Error())
 	}
 
-	log.Println("Loading provider plugin configuration...")
+	log.Println("Loading provider extension configuration...")
 	pluginCfgErr := k.p.LoadConfig(wd + "/config.json")
 	if pluginCfgErr != nil {
 		return fmt.Errorf("provider configuration, error: %s", pluginCfgErr.Error())
 	}
 
-	log.Println("Preparing provider plugin...")
+	log.Println("Preparing provider extension...")
 	pluginBootErr := k.p.Boot()
 	if pluginBootErr != nil {
 		return fmt.Errorf("provider boot, error:: %s", pluginBootErr.Error())
@@ -53,7 +54,7 @@ func (k *Kernel) initProvider(ctx context.Context) error {
 }
 
 // initDashboard to display monitored system data
-func (k *Kernel) initDashboard(ctx context.Context, t terminalapi.Terminal) error {
+func (k *Kernel) initDashboard(t terminalapi.Terminal) error {
 	// TODO Can be added provider name to dashboard, interface update required
 	log.Println("Fetching data graph from provider...")
 	g, gErr := k.p.DispatchGraph()
@@ -63,7 +64,7 @@ func (k *Kernel) initDashboard(ctx context.Context, t terminalapi.Terminal) erro
 
 	log.Println("Creating terminal dashboard UI...")
 	var dErr error
-	k.d, dErr = dashboard.NewMonitoringDashboard("BitAccretion", k.c.LogLevel, t, g)
+	k.d, dErr = dashboard.NewMonitoringDashboard("BitAccretion", k.c, k.s, t, g)
 	if dErr != nil {
 		return dErr
 	}
@@ -106,20 +107,21 @@ func (k *Kernel) dashboardUpdate(ctx context.Context, delay time.Duration) {
 
 // Run main process to handle dashboard and update it with data from provider
 func (k *Kernel) Run(t terminalapi.Terminal) error {
-	log.Println("Initializing core...")
+	log.Println("Initializing kernel...")
 
-	ctx, cancel := context.WithCancel(context.Background())
-	providerErr := k.initProvider(ctx)
+	providerErr := k.initProvider()
 	if providerErr != nil {
 		return providerErr
 	}
 
-	dashErr := k.initDashboard(ctx, t)
+	dashErr := k.initDashboard(t)
 	if dashErr != nil {
 		return dashErr
 	}
 
 	log.Println("Kernel ready...")
+
+	ctx, cancel := context.WithCancel(context.Background())
 	log.Println("Rendering terminal UI...")
 	quitter := func(k *terminalapi.Keyboard) {
 		if k.Key == 'q' || k.Key == 'Q' {
