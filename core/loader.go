@@ -3,18 +3,22 @@ package core
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/LinMAD/BitAccretion/model"
 	"os"
 	"path"
 	"plugin"
 
+	"github.com/LinMAD/BitAccretion/model"
 	"github.com/LinMAD/BitAccretion/provider"
 )
 
 const (
-	configFile                 = "config.json"
+	configFile = "config.json"
+
 	pluginProviderFile         = "provider.so"
 	pluginProviderMainFunction = "NewProvider"
+
+	pluginSoundFile         = "sound.so"
+	pluginSoundMainFunction = "PlayAlert"
 )
 
 // wd resolved rooted path name corresponding to the current directory
@@ -54,7 +58,7 @@ func LoadConfig() (*model.Config, error) {
 func LoadProviderPlugin() (provider.IProvider, error) {
 	mod, modErr := plugin.Open(path.Join(wd, pluginProviderFile))
 	if modErr != nil {
-		return nil, fmt.Errorf("unable to open plugin provider.so, error: " + modErr.Error())
+		return nil, fmt.Errorf("unable to open plugin %s, error: %s", pluginProviderFile, modErr.Error())
 	}
 
 	p, pErr := mod.Lookup(pluginProviderMainFunction)
@@ -67,4 +71,19 @@ func LoadProviderPlugin() (provider.IProvider, error) {
 	}
 
 	return p.(func() provider.IProvider)(), nil
+}
+
+// LoadSoundPlugin resolve sound plugin
+func LoadSoundPlugin() (func(name string), error) {
+	mod, modErr := plugin.Open(path.Join(wd, pluginSoundFile))
+	if modErr != nil {
+		return nil, fmt.Errorf("unable to open plugin %s, error: %s", pluginSoundFile, modErr.Error())
+	}
+
+	s, sErr := mod.Lookup(pluginSoundMainFunction)
+	if sErr != nil {
+		return nil, fmt.Errorf("expected to be found '%s' function in plugin, err: %s", pluginSoundMainFunction, sErr.Error())
+	}
+
+	return s.(func(name string)), nil
 }

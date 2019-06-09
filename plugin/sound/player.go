@@ -2,9 +2,10 @@ package main
 
 import (
 	"io/ioutil"
-	"log"
 	"math/rand"
 	"os"
+	"path"
+	"strings"
 	"time"
 
 	"github.com/faiface/beep"
@@ -14,63 +15,20 @@ import (
 
 const (
 	resourcePath = "/resources/sound"
-	voicePath    = resourcePath + "/voice/"
-	alarmPath    = resourcePath + "/alarm/"
-	sTag         = "SOUND"
+	alarmPath    = "alarm"
+	voicePath    = "voice"
 )
 
-// SendSoundAlert executes sound stream in speakers where runs program
-func SendSoundAlert() {
+var wd string
+
+func init() {
 	rand.Seed(time.Now().UTC().UnixNano())
-
-	wd, err := os.Getwd()
-	if err != nil {
-		log.Printf(sTag + ": Errpr -> Could not retrieve working directory")
-
-		return
-	}
-
-	playAlert(wd + alarmPath)
-	playVoice(wd + voicePath)
-
-	return
-}
-
-// playVoice random voice file
-func playVoice(basePath string) {
-	files, err := ioutil.ReadDir(basePath)
-	if err != nil {
-		log.Printf("%s: Error -> %v", sTag, err.Error())
-
-		return
-	}
-
-	randVoice := files[rand.Intn(len(files))].Name()
-	voiceFile, _ := os.Open(basePath + randVoice)
-	voiceStream, format, _ := wav.Decode(voiceFile)
-
-	play(voiceStream, format.SampleRate)
-}
-
-// playAlert random alert file
-func playAlert(basePath string) {
-	files, err := ioutil.ReadDir(basePath)
-	if err != nil {
-		log.Printf("%s: Error -> %v", sTag, err.Error())
-
-		return
-	}
-
-	randAlarm := files[rand.Intn(len(files))].Name()
-	alarmFile, _ := os.Open(basePath + randAlarm)
-	alarmStream, format, _ := wav.Decode(alarmFile)
-
-	play(alarmStream, format.SampleRate)
+	wd, _ = os.Getwd()
 }
 
 // play given streamer and rate of it
-func play(s beep.Streamer, rate beep.SampleRate) {
-	speaker.Init(rate, rate.N(time.Second/10))
+func play(s beep.Streamer, r beep.SampleRate) {
+	_ = speaker.Init(r, r.N(time.Second/10))
 
 	playing := make(chan struct{})
 	speaker.Play(beep.Seq(s, beep.Callback(func() {
@@ -78,4 +36,52 @@ func play(s beep.Streamer, rate beep.SampleRate) {
 	})))
 
 	<-playing
+}
+
+// execRandomAlarm sound file
+func execRandomAlarm(dir string) {
+	files, filesErr := ioutil.ReadDir(dir)
+	if filesErr != nil {
+		return
+	}
+
+	name := files[rand.Intn(len(files))].Name()
+	af, _ := os.Open(path.Join(dir, name))
+	stream, format, _ := wav.Decode(af)
+
+	play(stream, format.SampleRate)
+}
+
+// execVoice matching voice name if exist
+func execVoice(dir, reqName string) {
+	files, err := ioutil.ReadDir(dir)
+	if err != nil {
+		return
+	}
+
+	var voiceFileName string
+	for _, f := range files {
+		if strings.Contains(f.Name(), reqName) {
+			voiceFileName = f.Name()
+			break
+		}
+	}
+
+	if voiceFileName == "" {
+		return
+	}
+
+	audioFile, _ := os.Open(path.Join(dir, voiceFileName))
+	stream, format, _ := wav.Decode(audioFile)
+	play(stream, format.SampleRate)
+}
+
+// PlayAlert for given name
+func PlayAlert(name string) {
+	if wd == "" {
+		return
+	}
+
+	execRandomAlarm(path.Join(resourcePath, alarmPath))
+	execVoice(path.Join(resourcePath, voicePath), name)
 }
