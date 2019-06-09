@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	resourcePath = "/resources/sound"
+	resourcePath = "/resource/sound"
 	alarmPath    = "alarm"
 	voicePath    = "voice"
 )

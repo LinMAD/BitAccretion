@@ -1,3 +1,7 @@
+Audio file must be in `wav` format.
+
+#### Structure:
+
 In folder `alarm`
 ```
 The audio files extracted from original Valve's game Half-Life 2
