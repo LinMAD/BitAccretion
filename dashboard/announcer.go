@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/LinMAD/BitAccretion/event"
+	"github.com/LinMAD/BitAccretion/extension"
 	"github.com/LinMAD/BitAccretion/model"
 	"github.com/mum4k/termdash/cell"
 	"github.com/mum4k/termdash/widgets/text"
@@ -12,28 +13,31 @@ import (
 
 const maxTextHistory = 100
 
-// TextWidgetHandler for dashboard
-type TextWidgetHandler struct {
+// AnnouncerHandler for dashboard
+type AnnouncerHandler struct {
 	name           string
 	t              *text.Text
+	s              extension.ISound
 	historyCounter int8
 }
 
 // HandleNotifyEvent write to text widget
-func (txt *TextWidgetHandler) HandleNotifyEvent(e event.UpdateEvent) error {
+func (anon *AnnouncerHandler) HandleNotifyEvent(e event.UpdateEvent) error {
 	healthMsgList := make(map[model.HealthState]string, 0)
 	systems := e.MonitoringGraph.GetAllVertices()
-	txt.historyCounter++
 
+	anon.handleHistory()
 	for i := 0; i < len(systems); i++ {
 		sys := systems[i]
 
 		if sys.Health != model.HealthNormal {
 			healthMsgList[sys.Health] = fmt.Sprintf("%s - Health: %s", sys.Name, model.HealthStatesMap[sys.Health])
 		}
-	}
 
-	txt.handleHistory()
+		if sys.Health == model.HealthCritical {
+			anon.playAlter(sys.Name)
+		}
+	}
 
 	for h, msg := range healthMsgList {
 		var termColor cell.Color
@@ -47,41 +51,49 @@ func (txt *TextWidgetHandler) HandleNotifyEvent(e event.UpdateEvent) error {
 			termColor = cell.ColorWhite
 		}
 
-		txt.WriteToEventLog(msg, termColor)
+		anon.WriteToEventLog(msg, termColor)
 	}
 
 	return nil
 }
 
 // GetName of widget handler
-func (txt *TextWidgetHandler) GetName() string {
-	return txt.name
+func (anon *AnnouncerHandler) GetName() string {
+	return anon.name
 }
 
 // WriteToEventLog display message with color in widget
-func (txt *TextWidgetHandler) WriteToEventLog(msg string, color cell.Color) {
-	writeErr := txt.t.Write(fmt.Sprintf("|%s| %s\n", time.Now().Format(time.Stamp), msg), text.WriteCellOpts(cell.FgColor(color)))
+func (anon *AnnouncerHandler) WriteToEventLog(msg string, color cell.Color) {
+	writeErr := anon.t.Write(fmt.Sprintf("|%s| %s\n", time.Now().Format(time.Stamp), msg), text.WriteCellOpts(cell.FgColor(color)))
 	if writeErr != nil {
 		panic(writeErr)
 	}
 }
 
 // handleHistory of logged messages
-func (txt *TextWidgetHandler) handleHistory() {
-	if txt.historyCounter <= maxTextHistory {
+func (anon *AnnouncerHandler) handleHistory() {
+	anon.historyCounter++
+	if anon.historyCounter <= maxTextHistory {
 		return
 	}
 
-	txt.historyCounter = 0
-	txt.t.Reset()
+	anon.historyCounter = 0
+	anon.t.Reset()
 }
 
-// NewTextWidget creates and returns prepared widget
-func NewTextWidget(name string) (*TextWidgetHandler, error) {
+// playAlter sound for given name
+func (anon *AnnouncerHandler) playAlter(name string) {
+	if anon.s != nil {
+		anon.s.PlayAlert(model.VertexName(name))
+	}
+}
+
+// NewAnnouncerWidget creates and returns prepared widget
+func NewAnnouncerWidget(sound extension.ISound, name string) (*AnnouncerHandler, error) {
 	t, tErr := text.New(text.WrapAtRunes(), text.WrapAtWords(), text.RollContent())
 	if tErr != nil {
 		return nil, tErr
 	}
 
-	return &TextWidgetHandler{name: name, t: t}, nil
+	return &AnnouncerHandler{name: name, t: t, s: sound}, nil
 }

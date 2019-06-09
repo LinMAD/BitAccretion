@@ -23,7 +23,7 @@ type widgets struct {
 	reqSuccessful *BarWidgetHandler
 	reqIncorrect  *BarWidgetHandler
 	reqAggregated *SparkLineWidgetHandler
-	eventLog      *TextWidgetHandler
+	eventLog      *AnnouncerHandler
 	clock         *ClockWidgetHandler
 }
 
@@ -56,7 +56,7 @@ func (m *MonitoringDashboard) initWidgets(nodes []*model.Node) (err error) {
 		return err
 	}
 
-	m.widgetCollection.eventLog, err = NewTextWidget("system_error_text_widget")
+	m.widgetCollection.eventLog, err = NewAnnouncerWidget("system_error_text_widget")
 	if err != nil {
 		return err
 	}
