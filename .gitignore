@@ -72,6 +72,7 @@ npm-debug.log
 node_modules
 
 # Project and app
+build/*
 config.json
 !resource/sound/voice/testing_voice.wav
 resource/sound/voice/*
