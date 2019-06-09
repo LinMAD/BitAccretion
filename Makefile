@@ -15,18 +15,27 @@ prepare:
 	go get -u golang.org/x/lint/golint
 	go mod download
 
+## Clean from artifacts
+clean:
+	rm -rf build && mkdir build
+	mkdir -p build/resource
+
 ## Compile go code
-build: golint gotest
-	go build -o BitAccretion main.go
+build: golint gotest clean
+	go build -o ./build/BitAccretion main.go
 
 ## Compile sound player
 plugin_sound:
-	go build -buildmode=plugin -o ./sound.so extension/sound/player.go
+	rm -rf build/sound.so
+	cp -r resource/sound ./build/resource
+	go build -buildmode=plugin -o ./build/sound.so extension/sound/player.go
 
 ## Compile fake provider
 plugin_fake:
-	go build -buildmode=plugin -o ./provider.so extension/fake/provider.go
+	rm -rf build/provider.so
+	go build -buildmode=plugin -o ./build/provider.so extension/fake/provider.go
 
 ## Compile new relic provider
 plugin_relic:
-	go build -buildmode=plugin -o ./provider.so extension/newrelic/provider.go
+	rm -rf build/provider.so
+	go build -buildmode=plugin -o ./build/provider.so extension/newrelic/provider.go
