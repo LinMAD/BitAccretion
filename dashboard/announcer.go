@@ -2,6 +2,7 @@ package dashboard
 
 import (
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/LinMAD/BitAccretion/event"
@@ -15,10 +16,16 @@ const maxTextHistory = 100
 
 // AnnouncerHandler for dashboard
 type AnnouncerHandler struct {
-	name                 string
-	t                    *text.Text
-	s                    extension.ISound
-	historyCounter       int8
+	name           string
+	t              *text.Text
+	historyCounter int8
+	sound          soundHandler
+}
+
+type soundHandler struct {
+	sync.Mutex
+	player               extension.ISound
+	isAlertNeeded        bool
 	soundAlertDelay      time.Duration
 	lastSoundTriggerTime time.Time
 }
@@ -37,7 +44,8 @@ func (anon *AnnouncerHandler) HandleNotifyEvent(e event.UpdateEvent) error {
 		}
 
 		if sys.Health == model.HealthCritical {
-			anon.playAlter(sys.Name)
+			anon.sound.isAlertNeeded = true
+			go anon.playAlter(sys.Name)
 		}
 	}
 
@@ -85,17 +93,22 @@ func (anon *AnnouncerHandler) handleHistory() {
 
 // playAlter sound for given name
 func (anon *AnnouncerHandler) playAlter(name string) {
-	if anon.s == nil {
+	if anon.sound.player == nil || anon.sound.isAlertNeeded == false {
 		return
 	}
 
-	now := time.Now().UTC()
-	passedTime := now.Sub(anon.lastSoundTriggerTime)
+	anon.sound.Lock()
+	defer anon.sound.Unlock()
 
-	if passedTime >= anon.soundAlertDelay {
+	now := time.Now().UTC()
+	passedTime := now.Sub(anon.sound.lastSoundTriggerTime)
+
+	if passedTime >= anon.sound.soundAlertDelay {
 		anon.WriteToEventLog(fmt.Sprintf("Playing alert sound for %s...", name), cell.ColorBlue)
-		anon.s.PlayAlert(model.VertexName(name))
-		anon.lastSoundTriggerTime = now
+		anon.sound.player.PlayAlert(model.VertexName(name))
+		anon.sound.lastSoundTriggerTime = now
+	} else {
+		anon.sound.isAlertNeeded = false
 	}
 }
 
@@ -109,11 +122,14 @@ func NewAnnouncerWidget(sound extension.ISound, delay int, name string) (*Announ
 	now := time.Now().UTC()
 
 	return &AnnouncerHandler{
-			name:                 name,
-			t:                    t,
-			s:                    sound,
-			soundAlertDelay:      time.Duration(delay) * time.Minute,
-			lastSoundTriggerTime: now.Add(-42 * time.Hour),
+			name: name,
+			t:    t,
+			sound: soundHandler{
+				player:               sound,
+				isAlertNeeded:        false,
+				soundAlertDelay:      time.Duration(delay) * time.Minute,
+				lastSoundTriggerTime: now.Add(-42 * time.Hour),
+			},
 		},
 		nil
 }
