@@ -7,8 +7,8 @@ golint:
 
 ## Run tests for Go
 gotest:
-	- go test `go list ./... | grep -v /vendor/`
-	- go test -race `go list ./... | grep -v /vendor/`
+	- go test `go list ./... | grep -v vendor/ | grep -v extension/sound`
+	- go test -race `go list ./... | grep -v vendor/ | grep -v extension/sound`
 
 ## Install project dependencies
 prepare:

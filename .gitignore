@@ -73,3 +73,5 @@ node_modules
 
 # Project and app
 config.json
+!resource/sound/voice/testing_voice.wav
+resource/sound/voice/*

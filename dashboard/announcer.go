@@ -19,6 +19,7 @@ type AnnouncerHandler struct {
 	t              *text.Text
 	s              extension.ISound
 	historyCounter int8
+	lastSoundTriggerTime time.Time
 }
 
 // HandleNotifyEvent write to text widget
@@ -83,9 +84,16 @@ func (anon *AnnouncerHandler) handleHistory() {
 
 // playAlter sound for given name
 func (anon *AnnouncerHandler) playAlter(name string) {
-	if anon.s != nil {
-		anon.s.PlayAlert(model.VertexName(name))
+	if anon.s == nil {
+		return
 	}
+
+	now := time.Now().UTC()
+	_ = now.Sub(anon.lastSoundTriggerTime)
+
+	anon.WriteToEventLog(fmt.Sprintf("Playing alert sound for %s...", name), cell.ColorBlue)
+	anon.s.PlayAlert(model.VertexName(name))
+	anon.lastSoundTriggerTime = now
 }
 
 // NewAnnouncerWidget creates and returns prepared widget
@@ -95,5 +103,5 @@ func NewAnnouncerWidget(sound extension.ISound, name string) (*AnnouncerHandler,
 		return nil, tErr
 	}
 
-	return &AnnouncerHandler{name: name, t: t, s: sound}, nil
+	return &AnnouncerHandler{name: name, t: t, s: sound, lastSoundTriggerTime: time.Now().UTC()}, nil
 }

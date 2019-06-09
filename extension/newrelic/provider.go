@@ -156,9 +156,9 @@ func (nr *ProviderNewRelic) prepareGraph() (g *model.Graph) {
 // getMetricHealth return node health status by given metrics
 func (nr *ProviderNewRelic) getMetricHealth(m *model.SystemMetric) model.HealthState {
 	// Define node health by metrics
-	if int(m.ErrorCount) > nr.Config.HealthSensitivity.Danger {
+	if int(m.ErrorCount) >= nr.Config.HealthSensitivity.Danger {
 		return model.HealthCritical
-	} else if int(m.ErrorCount) > nr.Config.HealthSensitivity.Warning {
+	} else if int(m.ErrorCount) >= nr.Config.HealthSensitivity.Warning {
 		return model.HealthWarning
 	} else {
 		return model.HealthNormal

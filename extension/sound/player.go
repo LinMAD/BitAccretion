@@ -1,7 +1,6 @@
 package main
 
 import (
-	"github.com/LinMAD/BitAccretion/extension"
 	"io/ioutil"
 	"math/rand"
 	"os"
@@ -9,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/LinMAD/BitAccretion/extension"
 	"github.com/LinMAD/BitAccretion/model"
 	"github.com/faiface/beep"
 	"github.com/faiface/beep/speaker"
@@ -33,8 +33,8 @@ func (p *Player) PlayAlert(name model.VertexName) {
 		return
 	}
 
-	execRandomAlarm(path.Join(resourcePath, alarmPath))
-	execVoice(path.Join(resourcePath, voicePath), string(name))
+	execRandomAlarm(path.Join(p.wd, resourcePath, alarmPath))
+	execVoice(path.Join(p.wd, resourcePath, voicePath), string(name))
 }
 
 // NewSound prepares sound player
@@ -73,8 +73,8 @@ func execRandomAlarm(dir string) {
 
 // execVoice matching voice name if exist
 func execVoice(dir, reqName string) {
-	files, err := ioutil.ReadDir(dir)
-	if err != nil {
+	files, filesErr := ioutil.ReadDir(dir)
+	if filesErr != nil {
 		return
 	}
 

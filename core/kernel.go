@@ -64,7 +64,7 @@ func (k *Kernel) initDashboard(t terminalapi.Terminal) error {
 
 	log.Println("Creating terminal dashboard UI...")
 	var dErr error
-	k.d, dErr = dashboard.NewMonitoringDashboard("BitAccretion", k.c.LogLevel, t, g)
+	k.d, dErr = dashboard.NewMonitoringDashboard("BitAccretion", k.c, k.s, t, g)
 	if dErr != nil {
 		return dErr
 	}
