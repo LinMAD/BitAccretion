@@ -82,8 +82,12 @@ func LoadSoundPlugin() (extension.ISound, error) {
 
 	s, sErr := mod.Lookup(pluginSoundMainFunction)
 	if sErr != nil {
-		return nil, fmt.Errorf("expected to be found '%s' function in extension, err: %s", pluginSoundMainFunction, sErr.Error())
+		return nil, fmt.Errorf(
+			"expected to be found '%s' function in extension, err: %s",
+			pluginProviderMainFunction,
+			sErr.Error(),
+		)
 	}
 
-	return s.(extension.ISound), nil
+	return s.(func() extension.ISound)(), nil
 }

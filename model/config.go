@@ -4,6 +4,8 @@ import "github.com/LinMAD/BitAccretion/logger"
 
 // Config core settings
 type Config struct {
+	// IsSoundMode enabled for alerts
+	IsSoundMode bool `json:"sound_mode"`
 	// SurveyIntervalSec for data updates
 	SurveyIntervalSec int `json:"survey_interval_sec"`
 	// InterfaceUpdateIntervalSec terminal redraw frequency

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/LinMAD/BitAccretion/extension"
 	"io/ioutil"
 	"math/rand"
 	"os"
@@ -8,7 +9,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/LinMAD/BitAccretion/extension"
 	"github.com/LinMAD/BitAccretion/model"
 	"github.com/faiface/beep"
 	"github.com/faiface/beep/speaker"
@@ -25,6 +25,24 @@ const (
 type Player struct {
 	// wd is work dir or rooted base path
 	wd string
+}
+
+// PlayAlert for given name
+func (p *Player) PlayAlert(name model.VertexName) {
+	if p.wd == "" {
+		return
+	}
+
+	execRandomAlarm(path.Join(resourcePath, alarmPath))
+	execVoice(path.Join(resourcePath, voicePath), string(name))
+}
+
+// NewSound prepares sound player
+func NewSound() extension.ISound {
+	rand.Seed(time.Now().UTC().UnixNano())
+	wd, _ := os.Getwd()
+
+	return &Player{wd: wd}
 }
 
 // play given streamer and rate of it
@@ -75,22 +93,4 @@ func execVoice(dir, reqName string) {
 	audioFile, _ := os.Open(path.Join(dir, voiceFileName))
 	stream, format, _ := wav.Decode(audioFile)
 	play(stream, format.SampleRate)
-}
-
-// NewSound prepares sound player
-func NewSound() extension.ISound {
-	rand.Seed(time.Now().UTC().UnixNano())
-	wd, _ := os.Getwd()
-
-	return &Player{wd: wd}
-}
-
-// PlayAlert for given name
-func (p *Player) PlayAlert(name model.VertexName) {
-	if p.wd == "" {
-		return
-	}
-
-	execRandomAlarm(path.Join(resourcePath, alarmPath))
-	execVoice(path.Join(resourcePath, voicePath), string(name))
 }

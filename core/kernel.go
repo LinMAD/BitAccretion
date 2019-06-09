@@ -18,20 +18,21 @@ import (
 
 // Kernel core of whole application it's managing states and data communications
 type Kernel struct {
+	p extension.IProvider
+	s extension.ISound
 	c *model.Config
 	d *dashboard.MonitoringDashboard
-	p extension.IProvider
 	o event.IObserver
 	l logger.ILogger
 }
 
 // NewKernel of monitoring
-func NewKernel(dataProvider extension.IProvider, cfg *model.Config) *Kernel {
-	return &Kernel{c: cfg, p: dataProvider}
+func NewKernel(dataProvider extension.IProvider, sound extension.ISound, cfg *model.Config) *Kernel {
+	return &Kernel{p: dataProvider, s: sound, c: cfg}
 }
 
 //initProvider for usages
-func (k *Kernel) initProvider(ctx context.Context) error {
+func (k *Kernel) initProvider() error {
 	wd, err := os.Getwd()
 	if err != nil {
 		return fmt.Errorf("could not retrieve working directory, error: %s", err.Error())
@@ -53,7 +54,7 @@ func (k *Kernel) initProvider(ctx context.Context) error {
 }
 
 // initDashboard to display monitored system data
-func (k *Kernel) initDashboard(ctx context.Context, t terminalapi.Terminal) error {
+func (k *Kernel) initDashboard(t terminalapi.Terminal) error {
 	// TODO Can be added provider name to dashboard, interface update required
 	log.Println("Fetching data graph from provider...")
 	g, gErr := k.p.DispatchGraph()
@@ -106,20 +107,21 @@ func (k *Kernel) dashboardUpdate(ctx context.Context, delay time.Duration) {
 
 // Run main process to handle dashboard and update it with data from provider
 func (k *Kernel) Run(t terminalapi.Terminal) error {
-	log.Println("Initializing core...")
+	log.Println("Initializing kernel...")
 
-	ctx, cancel := context.WithCancel(context.Background())
-	providerErr := k.initProvider(ctx)
+	providerErr := k.initProvider()
 	if providerErr != nil {
 		return providerErr
 	}
 
-	dashErr := k.initDashboard(ctx, t)
+	dashErr := k.initDashboard(t)
 	if dashErr != nil {
 		return dashErr
 	}
 
 	log.Println("Kernel ready...")
+
+	ctx, cancel := context.WithCancel(context.Background())
 	log.Println("Rendering terminal UI...")
 	quitter := func(k *terminalapi.Keyboard) {
 		if k.Key == 'q' || k.Key == 'Q' {
