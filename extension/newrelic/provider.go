@@ -5,10 +5,10 @@ import (
 	"os"
 	"sync"
 
+	"github.com/LinMAD/BitAccretion/extension"
+	"github.com/LinMAD/BitAccretion/extension/newrelic/worker"
 	"github.com/LinMAD/BitAccretion/logger"
 	"github.com/LinMAD/BitAccretion/model"
-	"github.com/LinMAD/BitAccretion/plugin/newrelic/worker"
-	"github.com/LinMAD/BitAccretion/provider"
 )
 
 // NRConfig addition for config required for New Relic
@@ -36,17 +36,17 @@ type AppDetails struct {
 	RelicMetrics []string `json:"relic_metrics"`
 }
 
-// ProviderNewRelic base structure for plugin workflow
+// ProviderNewRelic base structure for extension workflow
 type ProviderNewRelic struct {
-	// Config for new relic plugin
+	// Config for new relic extension
 	Config NRConfig
 	// worker to harvesting API for metric data
 	worker *worker.RelicWorker
-	// pluginHealth current state of plugin
+	// pluginHealth current state of extension
 	pluginHealth model.HealthState
 }
 
-// LoadConfig of new relic plugin
+// LoadConfig of new relic extension
 func (nr *ProviderNewRelic) LoadConfig(pathToConfig string) error {
 	configFile, openErr := os.Open(pathToConfig)
 	if openErr != nil {
@@ -125,7 +125,7 @@ func (nr *ProviderNewRelic) FetchNewData(log logger.ILogger) (model.Graph, error
 	return *g, nil
 }
 
-// ProvideHealth will return health of plugin if New Relic API alive\reachable
+// ProvideHealth will return health of extension if New Relic API alive\reachable
 func (nr *ProviderNewRelic) ProvideHealth() model.HealthState {
 	return nr.pluginHealth
 }
@@ -166,6 +166,6 @@ func (nr *ProviderNewRelic) getMetricHealth(m *model.SystemMetric) model.HealthS
 }
 
 // NewProvider returns instance with implemented interface
-func NewProvider() provider.IProvider {
+func NewProvider() extension.IProvider {
 	return &ProviderNewRelic{pluginHealth: model.HealthNormal}
 }

@@ -3,9 +3,9 @@ package main
 import (
 	"math/rand"
 
+	"github.com/LinMAD/BitAccretion/extension"
 	"github.com/LinMAD/BitAccretion/logger"
 	"github.com/LinMAD/BitAccretion/model"
-	"github.com/LinMAD/BitAccretion/provider"
 )
 
 // FakeProvider randomly generates dummy data
@@ -41,7 +41,7 @@ func (f *FakeProvider) ProvideHealth() model.HealthState {
 }
 
 // NewProvider implementation
-func NewProvider() provider.IProvider {
+func NewProvider() extension.IProvider {
 	return &FakeProvider{pluginHealth: model.HealthNormal}
 }
 

@@ -7,8 +7,8 @@ import (
 	"path"
 	"plugin"
 
+	"github.com/LinMAD/BitAccretion/extension"
 	"github.com/LinMAD/BitAccretion/model"
-	"github.com/LinMAD/BitAccretion/provider"
 )
 
 const (
@@ -18,7 +18,7 @@ const (
 	pluginProviderMainFunction = "NewProvider"
 
 	pluginSoundFile         = "sound.so"
-	pluginSoundMainFunction = "PlayAlert"
+	pluginSoundMainFunction = "NewSound"
 )
 
 // wd resolved rooted path name corresponding to the current directory
@@ -54,36 +54,36 @@ func LoadConfig() (*model.Config, error) {
 	return &config, nil
 }
 
-// LoadProviderPlugin resolve data provider plugin
-func LoadProviderPlugin() (provider.IProvider, error) {
+// LoadProviderPlugin resolve data provider extension
+func LoadProviderPlugin() (extension.IProvider, error) {
 	mod, modErr := plugin.Open(path.Join(wd, pluginProviderFile))
 	if modErr != nil {
-		return nil, fmt.Errorf("unable to open plugin %s, error: %s", pluginProviderFile, modErr.Error())
+		return nil, fmt.Errorf("unable to open extension %s, error: %s", pluginProviderFile, modErr.Error())
 	}
 
 	p, pErr := mod.Lookup(pluginProviderMainFunction)
 	if pErr != nil {
 		return nil, fmt.Errorf(
-			"expected to be found '%s' function in plugin, err: %s",
+			"expected to be found '%s' function in extension, err: %s",
 			pluginProviderMainFunction,
 			pErr.Error(),
 		)
 	}
 
-	return p.(func() provider.IProvider)(), nil
+	return p.(func() extension.IProvider)(), nil
 }
 
-// LoadSoundPlugin resolve sound plugin
-func LoadSoundPlugin() (func(name string), error) {
+// LoadSoundPlugin resolve sound extension
+func LoadSoundPlugin() (extension.ISound, error) {
 	mod, modErr := plugin.Open(path.Join(wd, pluginSoundFile))
 	if modErr != nil {
-		return nil, fmt.Errorf("unable to open plugin %s, error: %s", pluginSoundFile, modErr.Error())
+		return nil, fmt.Errorf("unable to open extension %s, error: %s", pluginSoundFile, modErr.Error())
 	}
 
 	s, sErr := mod.Lookup(pluginSoundMainFunction)
 	if sErr != nil {
-		return nil, fmt.Errorf("expected to be found '%s' function in plugin, err: %s", pluginSoundMainFunction, sErr.Error())
+		return nil, fmt.Errorf("expected to be found '%s' function in extension, err: %s", pluginSoundMainFunction, sErr.Error())
 	}
 
-	return s.(func(name string)), nil
+	return s.(extension.ISound), nil
 }

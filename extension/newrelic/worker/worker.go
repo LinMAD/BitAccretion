@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/LinMAD/BitAccretion/extension/newrelic/client"
 	"github.com/LinMAD/BitAccretion/logger"
 	"github.com/LinMAD/BitAccretion/model"
-	"github.com/LinMAD/BitAccretion/plugin/newrelic/client"
 )
 
 const relicTag = "Relic worker"

@@ -1,4 +1,4 @@
-package provider
+package extension
 
 import (
 	"github.com/LinMAD/BitAccretion/logger"
@@ -16,7 +16,7 @@ type IProvider interface {
 	DispatchGraph() (model.Graph, error)
 	// FetchNewData executes provider to get graph with data
 	FetchNewData(l logger.ILogger) (model.Graph, error)
-	// ProvideHealth must provide if plugin still can work
-	// example API not reachable or plugin has errors and it must be restarted
+	// ProvideHealth must provide if extension still can work
+	// example API not reachable or extension has errors and it must be restarted
 	ProvideHealth() model.HealthState
 }

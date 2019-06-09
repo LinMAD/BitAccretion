@@ -1,12 +1,21 @@
 package main
 
 import (
+	"os"
 	"path"
 	"testing"
 )
 
 const testVoiceName = "testing_voice"
-var audioPath = path.Clean(path.Join(wd, "../../", resourcePath))
+
+var (
+	wd        string
+	audioPath = path.Clean(path.Join(wd, "../../", resourcePath))
+)
+
+func init() {
+	wd, _ = os.Getwd()
+}
 
 func TestExecRandomAlarm(t *testing.T) {
 	execRandomAlarm(path.Join(audioPath, alarmPath))

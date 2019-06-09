@@ -8,6 +8,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/LinMAD/BitAccretion/extension"
+	"github.com/LinMAD/BitAccretion/model"
 	"github.com/faiface/beep"
 	"github.com/faiface/beep/speaker"
 	"github.com/faiface/beep/wav"
@@ -19,11 +21,10 @@ const (
 	voicePath    = "voice"
 )
 
-var wd string
-
-func init() {
-	rand.Seed(time.Now().UTC().UnixNano())
-	wd, _ = os.Getwd()
+// Player for sound making
+type Player struct {
+	// wd is work dir or rooted base path
+	wd string
 }
 
 // play given streamer and rate of it
@@ -76,12 +77,20 @@ func execVoice(dir, reqName string) {
 	play(stream, format.SampleRate)
 }
 
+// NewSound prepares sound player
+func NewSound() extension.ISound {
+	rand.Seed(time.Now().UTC().UnixNano())
+	wd, _ := os.Getwd()
+
+	return &Player{wd: wd}
+}
+
 // PlayAlert for given name
-func PlayAlert(name string) {
-	if wd == "" {
+func (p *Player) PlayAlert(name model.VertexName) {
+	if p.wd == "" {
 		return
 	}
 
 	execRandomAlarm(path.Join(resourcePath, alarmPath))
-	execVoice(path.Join(resourcePath, voicePath), name)
+	execVoice(path.Join(resourcePath, voicePath), string(name))
 }

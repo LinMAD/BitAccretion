@@ -9,9 +9,9 @@ import (
 
 	"github.com/LinMAD/BitAccretion/dashboard"
 	"github.com/LinMAD/BitAccretion/event"
+	"github.com/LinMAD/BitAccretion/extension"
 	"github.com/LinMAD/BitAccretion/logger"
 	"github.com/LinMAD/BitAccretion/model"
-	"github.com/LinMAD/BitAccretion/provider"
 	"github.com/mum4k/termdash"
 	"github.com/mum4k/termdash/terminal/terminalapi"
 )
@@ -20,13 +20,13 @@ import (
 type Kernel struct {
 	c *model.Config
 	d *dashboard.MonitoringDashboard
-	p provider.IProvider
+	p extension.IProvider
 	o event.IObserver
 	l logger.ILogger
 }
 
 // NewKernel of monitoring
-func NewKernel(dataProvider provider.IProvider, cfg *model.Config) *Kernel {
+func NewKernel(dataProvider extension.IProvider, cfg *model.Config) *Kernel {
 	return &Kernel{c: cfg, p: dataProvider}
 }
 
@@ -37,13 +37,13 @@ func (k *Kernel) initProvider(ctx context.Context) error {
 		return fmt.Errorf("could not retrieve working directory, error: %s", err.Error())
 	}
 
-	log.Println("Loading provider plugin configuration...")
+	log.Println("Loading provider extension configuration...")
 	pluginCfgErr := k.p.LoadConfig(wd + "/config.json")
 	if pluginCfgErr != nil {
 		return fmt.Errorf("provider configuration, error: %s", pluginCfgErr.Error())
 	}
 
-	log.Println("Preparing provider plugin...")
+	log.Println("Preparing provider extension...")
 	pluginBootErr := k.p.Boot()
 	if pluginBootErr != nil {
 		return fmt.Errorf("provider boot, error:: %s", pluginBootErr.Error())
