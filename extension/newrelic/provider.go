@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"sync"
 
@@ -92,6 +93,8 @@ func (nr *ProviderNewRelic) FetchNewData(log logger.ILogger) (model.Graph, error
 	appList := g.GetAllVertices()
 	appCount := int8(len(appList))
 
+	log.Debug(fmt.Sprintf("Harvesting data from NewRelic API..."))
+
 	var wg sync.WaitGroup
 	var w int8
 	for w = 0; w < appCount; w++ {
@@ -121,6 +124,7 @@ func (nr *ProviderNewRelic) FetchNewData(log logger.ILogger) (model.Graph, error
 			app.Health = util.GetMetricsHealthByPercentRatio(&app.Metric, &nr.Config.HealthSensitivity)
 		}(w)
 	}
+
 	wg.Wait()
 
 	return *g, nil
