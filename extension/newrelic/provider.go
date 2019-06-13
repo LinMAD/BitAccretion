@@ -121,7 +121,7 @@ func (nr *ProviderNewRelic) FetchNewData(log logger.ILogger) (model.Graph, error
 				app.Metric.ErrorCount += host.Metrics.ErrorCount
 			}
 
-			app.Health = util.GetMetricsHealthByPercentRatio(&app.Metric, &nr.Config.HealthSensitivity)
+			app.Health = util.GetMetricHealthByValue(&app.Metric, &nr.Config.HealthSensitivity)
 		}(w)
 	}
 

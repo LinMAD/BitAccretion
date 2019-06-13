@@ -58,7 +58,7 @@ func (c *NRelicClient) Authenticate() (bool, error) {
 // isReachableHost check if still have connection (helps to avoid null pointer exceptions)
 func (c *NRelicClient) isReachableHost(host, port string) error {
 	endpoint := host + ":" + port
-	conn, err := net.DialTimeout("tcp", endpoint, 1 * time.Second)
+	conn, err := net.DialTimeout("tcp", endpoint, 1*time.Second)
 	if err != nil {
 		return fmt.Errorf("%s is unreachable, error: %s", endpoint, err.Error())
 	}
