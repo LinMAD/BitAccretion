@@ -9,6 +9,7 @@ import (
 	"github.com/LinMAD/BitAccretion/extension/newrelic/worker"
 	"github.com/LinMAD/BitAccretion/logger"
 	"github.com/LinMAD/BitAccretion/model"
+	"github.com/LinMAD/BitAccretion/util"
 )
 
 // NRConfig addition for config required for New Relic
@@ -117,7 +118,7 @@ func (nr *ProviderNewRelic) FetchNewData(log logger.ILogger) (model.Graph, error
 				app.Metric.ErrorCount += host.Metrics.ErrorCount
 			}
 
-			app.Health = nr.getMetricHealth(&app.Metric)
+			app.Health = util.GetMetricsHealthByPercentRatio(&app.Metric, &nr.Config.HealthSensitivity)
 		}(w)
 	}
 	wg.Wait()
@@ -151,18 +152,6 @@ func (nr *ProviderNewRelic) prepareGraph() (g *model.Graph) {
 	}
 
 	return
-}
-
-// getMetricHealth return node health status by given metrics
-func (nr *ProviderNewRelic) getMetricHealth(m *model.SystemMetric) model.HealthState {
-	// Define node health by metrics
-	if int(m.ErrorCount) >= nr.Config.HealthSensitivity.Danger {
-		return model.HealthCritical
-	} else if int(m.ErrorCount) >= nr.Config.HealthSensitivity.Warning {
-		return model.HealthWarning
-	} else {
-		return model.HealthNormal
-	}
 }
 
 // NewProvider returns instance with implemented interface
