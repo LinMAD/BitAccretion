@@ -21,6 +21,8 @@ var HealthStatesMap = map[HealthState]string{
 
 // HealthSensitivity represents metrics sensitivity determination
 type HealthSensitivity struct {
-	Danger  int `json:"danger"`
+	// Critical state
+	Critical int `json:"critical"`
+	// Warning state
 	Warning int `json:"warning"`
 }
