@@ -46,8 +46,6 @@ func (w *RelicWorker) CollectApplicationHostMetrics(log logger.ILogger, appID st
 	fetchedData := &FetchedNewRelicData{}
 	fetchedData.HostMetrics = make([]hostMetricsData, 0)
 
-	log.Debug(fmt.Sprintf("Traversing app ID: %s", appID))
-
 	hosts := w.relicClient.GetApplicationHost(appID)
 	hLen := len(hosts.AppsHosts)
 
@@ -60,7 +58,6 @@ func (w *RelicWorker) CollectApplicationHostMetrics(log logger.ILogger, appID st
 
 			host := hosts.AppsHosts[group]
 
-			log.Debug(fmt.Sprintf("Collecting data from host id: %d name: %s", host.HostID, host.Host))
 			hostMetrics := w.relicClient.GetHostMetricData(appID, host.HostID, metrics)
 			metricsData := model.SystemMetric{}
 
@@ -79,7 +76,9 @@ func (w *RelicWorker) CollectApplicationHostMetrics(log logger.ILogger, appID st
 			fetchedData.HostMetrics = append(fetchedData.HostMetrics, hostMetricsData)
 		}(group)
 	}
+
 	wg.Wait()
+	log.Debug(fmt.Sprintf("Traversed NewRelic APP ID: %s and all instances host (%d)", appID, hLen))
 
 	return fetchedData
 }

@@ -8,7 +8,6 @@ type (
 
 	// Graph of all infrastructure
 	Graph struct {
-		// TODO Refactor maps to slices cos Node will have name
 		// Contains application vertex
 		vertices map[VertexName]*Node
 		// Contains application vertex connection

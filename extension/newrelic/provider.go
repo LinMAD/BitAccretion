@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"sync"
 
@@ -9,6 +10,7 @@ import (
 	"github.com/LinMAD/BitAccretion/extension/newrelic/worker"
 	"github.com/LinMAD/BitAccretion/logger"
 	"github.com/LinMAD/BitAccretion/model"
+	"github.com/LinMAD/BitAccretion/util"
 )
 
 // NRConfig addition for config required for New Relic
@@ -91,6 +93,8 @@ func (nr *ProviderNewRelic) FetchNewData(log logger.ILogger) (model.Graph, error
 	appList := g.GetAllVertices()
 	appCount := int8(len(appList))
 
+	log.Debug(fmt.Sprintf("Harvesting data from NewRelic API..."))
+
 	var wg sync.WaitGroup
 	var w int8
 	for w = 0; w < appCount; w++ {
@@ -117,9 +121,10 @@ func (nr *ProviderNewRelic) FetchNewData(log logger.ILogger) (model.Graph, error
 				app.Metric.ErrorCount += host.Metrics.ErrorCount
 			}
 
-			app.Health = nr.getMetricHealth(&app.Metric)
+			app.Health = util.GetMetricHealthByValue(&app.Metric, &nr.Config.HealthSensitivity)
 		}(w)
 	}
+
 	wg.Wait()
 
 	return *g, nil
@@ -151,18 +156,6 @@ func (nr *ProviderNewRelic) prepareGraph() (g *model.Graph) {
 	}
 
 	return
-}
-
-// getMetricHealth return node health status by given metrics
-func (nr *ProviderNewRelic) getMetricHealth(m *model.SystemMetric) model.HealthState {
-	// Define node health by metrics
-	if int(m.ErrorCount) >= nr.Config.HealthSensitivity.Danger {
-		return model.HealthCritical
-	} else if int(m.ErrorCount) >= nr.Config.HealthSensitivity.Warning {
-		return model.HealthWarning
-	} else {
-		return model.HealthNormal
-	}
 }
 
 // NewProvider returns instance with implemented interface

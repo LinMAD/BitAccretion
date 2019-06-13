@@ -9,8 +9,6 @@ import (
 	"time"
 )
 
-// TODO Refactor API client
-
 const (
 	// base endpoint API
 	domain  = "api.newrelic.com"
@@ -59,103 +57,64 @@ func (c *NRelicClient) Authenticate() (bool, error) {
 
 // isReachableHost check if still have connection (helps to avoid null pointer exceptions)
 func (c *NRelicClient) isReachableHost(host, port string) error {
-	timeout := time.Duration(1 * time.Second)
 	endpoint := host + ":" + port
-
-	conn, err := net.DialTimeout("tcp", endpoint, timeout)
+	conn, err := net.DialTimeout("tcp", endpoint, 1*time.Second)
 	if err != nil {
-		return fmt.Errorf(endpoint+" is unreachable, error: %s", err.Error())
+		return fmt.Errorf("%s is unreachable, error: %s", endpoint, err.Error())
 	}
 	defer conn.Close()
 
 	return nil
 }
 
-// GetApplicationsList return applications
-func (c *NRelicClient) GetApplicationsList() Application {
-	if connectionErr := c.isReachableHost(domain, "80"); connectionErr != nil {
-		return c.GetApplicationsList()
-	}
-	var apps Application
-
-	req, err := http.NewRequest("GET", fmt.Sprintf("%s/applications.json", baseURI), nil)
-	if err != nil {
-		return apps
-	}
-
-	req.Header.Add("X-Api-Key", c.key)
-
-	resp, respErr := c.httpClient.Do(req)
-	if respErr != nil {
-		return apps
-	}
-
-	defer resp.Body.Close()
-
-	if _, isFound := c.relicErrorCodes[resp.StatusCode]; isFound {
-		return apps
-	}
-
-	respBody, readErr := ioutil.ReadAll(resp.Body)
-	if readErr != nil {
-		return apps
-	}
-
-	_ = json.Unmarshal(respBody, &apps)
-
-	return apps
-}
-
 // GetApplicationHost returns stats by application Id
-func (c *NRelicClient) GetApplicationHost(appID string) ApplicationHost {
+func (c *NRelicClient) GetApplicationHost(appID string) (appHost ApplicationHost) {
 	if connectionErr := c.isReachableHost(domain, "80"); connectionErr != nil {
 		return c.GetApplicationHost(appID)
 	}
 
-	var appsHost ApplicationHost
-
 	req, err := http.NewRequest("GET", fmt.Sprintf("%s/applications/%s/hosts.json", baseURI, appID), nil)
 	if err != nil {
-		return appsHost
+		return
 	}
-
 	req.Header.Add("X-Api-Key", c.key)
 
 	resp, respErr := c.httpClient.Do(req)
 	if respErr != nil {
-		return appsHost
+		return
 	}
 
 	defer resp.Body.Close()
 
 	if _, isFound := c.relicErrorCodes[resp.StatusCode]; isFound {
-		return appsHost
+		return
 	}
 
 	respBody, readErr := ioutil.ReadAll(resp.Body)
 	if readErr != nil {
-		return appsHost
+		return
 	}
 
-	_ = json.Unmarshal(respBody, &appsHost)
+	unMarshErr := json.Unmarshal(respBody, &appHost)
+	if unMarshErr != nil {
+		return ApplicationHost{}
+	}
 
-	return appsHost
+	return
 }
 
 // GetHostMetricData metrics for application and metrics
-func (c *NRelicClient) GetHostMetricData(appID string, hostID int, metricsNames []string) MetricsData {
+func (c *NRelicClient) GetHostMetricData(appID string, hostID int, metricsNames []string) (m MetricsData) {
 	if connectionErr := c.isReachableHost(domain, "80"); connectionErr != nil {
 		return c.GetHostMetricData(appID, hostID, metricsNames)
 	}
-
-	var hostMetrics MetricsData
 
 	now := time.Now()
 	from := now.Add(time.Duration(-1) * time.Minute)
 
 	req, err := http.NewRequest("GET", fmt.Sprintf("%s/applications/%s/hosts/%d/metrics/data.json", baseURI, appID, hostID), nil)
 	if err != nil {
-		return hostMetrics
+		return
 	}
 
 	q := req.URL.Query()
@@ -170,21 +129,24 @@ func (c *NRelicClient) GetHostMetricData(appID string, hostID int, metricsNames 
 
 	resp, respErr := c.httpClient.Do(req)
 	if respErr != nil {
-		return hostMetrics
+		return
 	}
 
 	defer resp.Body.Close()
 
 	if _, isFound := c.relicErrorCodes[resp.StatusCode]; isFound {
-		return hostMetrics
+		return
 	}
 
 	respBody, readErr := ioutil.ReadAll(resp.Body)
 	if readErr != nil {
-		return hostMetrics
+		return
 	}
 
-	_ = json.Unmarshal(respBody, &hostMetrics)
+	unMarshErr := json.Unmarshal(respBody, &m)
+	if unMarshErr != nil {
+		return MetricsData{}
+	}
 
-	return hostMetrics
+	return
 }
