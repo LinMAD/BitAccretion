@@ -2,6 +2,7 @@
   "sound_mode": true,
   "sound_alert_delay_min": 1,
   "log_level": 1,
+  "display_even_log_history": 500,
   "survey_interval_sec": 10,
   "interface_update_interval_sec": 1,
   "health_sensitivity": {
