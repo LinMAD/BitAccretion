@@ -7,14 +7,12 @@ import (
 	"github.com/mum4k/termdash/widgets/linechart"
 )
 
-// maxPoints in line chart for one line (control visual overflow and data updates)
-const maxPoints = 50
-
 // SparkLineWidgetHandler for dashboard
 type SparkLineWidgetHandler struct {
 	name  string
 	lc    *linechart.LineChart
 	lines seriesData
+	config *model.Config
 }
 
 // seriesData used to draw points in line chart
@@ -55,14 +53,14 @@ func (s *SparkLineWidgetHandler) updateLineData(g *model.Graph) {
 	var okPoints, badPoints []float64
 	nodes := g.GetAllVertices()
 
-	if len(s.lines.okData) >= maxPoints {
-		okPoints = s.lines.okData[1:maxPoints]
+	if len(s.lines.okData) >= int(s.config.DisplayEvenLogHistory) {
+		okPoints = s.lines.okData[1:int(s.config.DisplayEvenLogHistory)]
 	} else {
 		okPoints = s.lines.okData
 	}
 
-	if len(s.lines.badData) >= maxPoints {
-		badPoints = s.lines.badData[1:maxPoints]
+	if len(s.lines.badData) >= int(s.config.DisplayEvenLogHistory) {
+		badPoints = s.lines.badData[1:int(s.config.DisplayEvenLogHistory)]
 	} else {
 		badPoints = s.lines.badData
 	}
@@ -78,7 +76,7 @@ func (s *SparkLineWidgetHandler) updateLineData(g *model.Graph) {
 }
 
 // NewLineWidget creates and returns prepared widget
-func NewLineWidget(name string) (*SparkLineWidgetHandler, error) {
+func NewLineWidget(name string, c *model.Config) (*SparkLineWidgetHandler, error) {
 	lc, err := linechart.New(
 		linechart.AxesCellOpts(cell.FgColor(cell.ColorWhite)),
 		linechart.YLabelCellOpts(cell.FgColor(cell.ColorWhite)),
@@ -91,6 +89,7 @@ func NewLineWidget(name string) (*SparkLineWidgetHandler, error) {
 	widget := &SparkLineWidgetHandler{
 		name: name,
 		lc:   lc,
+		config: c,
 		lines: seriesData{
 			okData:  make([]float64, 0),
 			badData: make([]float64, 0),

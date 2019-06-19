@@ -12,14 +12,13 @@ import (
 	"github.com/mum4k/termdash/widgets/text"
 )
 
-const maxTextHistory = 100
-
 // AnnouncerHandler for dashboard
 type AnnouncerHandler struct {
 	name           string
 	t              *text.Text
-	historyCounter int8
+	historyCounter int16
 	sound          soundHandler
+	config         *model.Config
 }
 
 type soundHandler struct {
@@ -83,7 +82,7 @@ func (anon *AnnouncerHandler) WriteToEventLog(msg string, color cell.Color) {
 // handleHistory of logged messages
 func (anon *AnnouncerHandler) handleHistory() {
 	anon.historyCounter++
-	if anon.historyCounter <= maxTextHistory {
+	if anon.historyCounter <= anon.config.DisplayEvenLogHistory {
 		return
 	}
 
@@ -113,7 +112,7 @@ func (anon *AnnouncerHandler) playAlter(name string) {
 }
 
 // NewAnnouncerWidget creates and returns prepared widget
-func NewAnnouncerWidget(sound extension.ISound, delay int, name string) (*AnnouncerHandler, error) {
+func NewAnnouncerWidget(sound extension.ISound, c *model.Config, name string) (*AnnouncerHandler, error) {
 	t, tErr := text.New(text.WrapAtRunes(), text.WrapAtWords(), text.RollContent())
 	if tErr != nil {
 		return nil, tErr
@@ -122,12 +121,13 @@ func NewAnnouncerWidget(sound extension.ISound, delay int, name string) (*Announ
 	now := time.Now().UTC()
 
 	return &AnnouncerHandler{
-			name: name,
-			t:    t,
+			name:   name,
+			t:      t,
+			config: c,
 			sound: soundHandler{
 				player:               sound,
 				isAlertNeeded:        false,
-				soundAlertDelay:      time.Duration(delay) * time.Minute,
+				soundAlertDelay:      time.Duration(c.SoundAlertDelayMin) * time.Minute,
 				lastSoundTriggerTime: now.Add(-42 * time.Hour),
 			},
 		},

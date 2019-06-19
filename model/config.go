@@ -14,4 +14,6 @@ type Config struct {
 	InterfaceUpdateIntervalSec int `json:"interface_update_interval_sec"`
 	// LogLevel message to display in event widget
 	LogLevel logger.LevelOfLog `json:"log_level"`
+	// DisplayEvenLogHistory limit to display rendered charts or logs
+	DisplayEvenLogHistory int16 `json:"display_even_log_history"`
 }
