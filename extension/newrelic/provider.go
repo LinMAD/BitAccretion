@@ -99,14 +99,22 @@ func (nr *ProviderNewRelic) FetchNewData(log logger.ILogger) (model.Graph, error
 	ctx, cancel := context.WithCancel(context.Background())
 
 	// Get info from API with timeout
-	ticker := time.NewTicker(time.Duration(nr.Config.SurveyIntervalSec*2) * time.Second)
+	ticker := time.NewTicker(time.Duration(nr.Config.SurveyIntervalSec*2+1) * time.Second)
 	defer ticker.Stop()
+	isExecuted := false // all only one coroutine
 
 	for {
 		select {
 		default:
-			nr.fetchMetricsWithGraph(g, log)
-			cancel()
+			if isExecuted {
+				continue
+			}
+
+			isExecuted = true
+			go func() {
+				defer cancel()
+				nr.fetchMetricsWithGraph(g, log)
+			}()
 		case <-ticker.C:
 			cancel()
 		case <-ctx.Done():

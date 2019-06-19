@@ -9,9 +9,9 @@ import (
 
 // SparkLineWidgetHandler for dashboard
 type SparkLineWidgetHandler struct {
-	name  string
-	lc    *linechart.LineChart
-	lines seriesData
+	name   string
+	lc     *linechart.LineChart
+	lines  seriesData
 	config *model.Config
 }
 
@@ -87,8 +87,8 @@ func NewLineWidget(name string, c *model.Config) (*SparkLineWidgetHandler, error
 	}
 
 	widget := &SparkLineWidgetHandler{
-		name: name,
-		lc:   lc,
+		name:   name,
+		lc:     lc,
 		config: c,
 		lines: seriesData{
 			okData:  make([]float64, 0),
