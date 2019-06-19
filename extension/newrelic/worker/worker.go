@@ -49,6 +49,7 @@ func (w *RelicWorker) CollectApplicationHostMetrics(log logger.ILogger, appID st
 	hosts := w.relicClient.GetApplicationHost(appID)
 	hLen := len(hosts.AppsHosts)
 
+	// TODO Some where here could be dead lock, mb make timout with context cancel of all go threads
 	var wg sync.WaitGroup
 	for group := 0; group < hLen; group++ {
 		wg.Add(1)

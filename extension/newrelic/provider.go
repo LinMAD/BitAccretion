@@ -1,10 +1,12 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"os"
 	"sync"
+	"time"
 
 	"github.com/LinMAD/BitAccretion/extension"
 	"github.com/LinMAD/BitAccretion/extension/newrelic/worker"
@@ -15,6 +17,8 @@ import (
 
 // NRConfig addition for config required for New Relic
 type NRConfig struct {
+	// SurveyIntervalSec for data updates
+	SurveyIntervalSec int `json:"survey_interval_sec"`
 	// APIKey of NewRelic
 	APIKey string `json:"api_key"`
 	// APPSets to survey in NewRelic
@@ -90,10 +94,36 @@ func (nr *ProviderNewRelic) DispatchGraph() (model.Graph, error) {
 func (nr *ProviderNewRelic) FetchNewData(log logger.ILogger) (model.Graph, error) {
 	g := nr.prepareGraph()
 
+	log.Debug(fmt.Sprintf("Harvesting data from NewRelic API..."))
+
+	ctx, cancel := context.WithCancel(context.Background())
+
+	// Get info from API with timeout
+	ticker := time.NewTicker(time.Duration(nr.Config.SurveyIntervalSec*2) * time.Second)
+	defer ticker.Stop()
+
+	for {
+		select {
+		default:
+			nr.fetchMetricsWithGraph(g, log)
+			cancel()
+		case <-ticker.C:
+			cancel()
+		case <-ctx.Done():
+			return *g, nil
+		}
+	}
+}
+
+// ProvideHealth will return health of extension if New Relic API alive\reachable
+func (nr *ProviderNewRelic) ProvideHealth() model.HealthState {
+	return nr.pluginHealth
+}
+
+// fetchMetricsWithGraph from API and put in to graph
+func (nr *ProviderNewRelic) fetchMetricsWithGraph(g *model.Graph, log logger.ILogger) {
 	appList := g.GetAllVertices()
 	appCount := int8(len(appList))
-
-	log.Debug(fmt.Sprintf("Harvesting data from NewRelic API..."))
 
 	var wg sync.WaitGroup
 	var w int8
@@ -126,13 +156,6 @@ func (nr *ProviderNewRelic) FetchNewData(log logger.ILogger) (model.Graph, error
 	}
 
 	wg.Wait()
-
-	return *g, nil
-}
-
-// ProvideHealth will return health of extension if New Relic API alive\reachable
-func (nr *ProviderNewRelic) ProvideHealth() model.HealthState {
-	return nr.pluginHealth
 }
 
 // prepareGraph from given configuration
