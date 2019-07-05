@@ -23,19 +23,21 @@ func (l *loggerHandler) SetMode(level logger.LevelOfLog) {
 
 // Debug messages
 func (l *loggerHandler) Debug(msg string) {
-	if l.lvl == logger.DebugLog {
+	if l.lvl <= logger.DebugLog {
 		l.widget.WriteToEventLog("Debug: "+msg, cell.ColorWhite)
 	}
 }
 
 // Normal events messages
 func (l *loggerHandler) Normal(msg string) {
-	l.widget.WriteToEventLog(msg, cell.ColorWhite)
+	if l.lvl < logger.ErrorLog {
+		l.widget.WriteToEventLog(msg, cell.ColorWhite)
+	}
 }
 
 // Error events messages
 func (l *loggerHandler) Error(msg string) {
-	if l.lvl == logger.ErrorLog {
+	if l.lvl <= logger.ErrorLog {
 		l.widget.WriteToEventLog(msg, cell.ColorRed)
 	}
 }
