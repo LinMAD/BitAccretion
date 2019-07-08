@@ -139,6 +139,7 @@ func (k *Kernel) Run(t terminalapi.Terminal) error {
 
 	fmt.Print("\033[H\033[2J") // Clean terminal screen from any artifacts
 
+	k.l.Normal("Dashboard ready and preparing to collect data...")
 	termErr := termdash.Run(
 		ctx,
 		t,

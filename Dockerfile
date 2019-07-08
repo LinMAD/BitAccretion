@@ -27,8 +27,7 @@ COPY ./. /go/src/github.com/LinMAD/BitAccretion
 WORKDIR /go/src/github.com/LinMAD/BitAccretion
 
 # Compile it
-RUN make prepare
-# TODO Remove hardocded provider plugin
+# TODO Remove hardcoded provider plugin
 RUN go build -o ./build/BitAccretion main.go && make plugin_relic && make plugin_sound
 COPY config.json build/config.json
 WORKDIR build

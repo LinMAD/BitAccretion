@@ -32,12 +32,19 @@ func (g *GaugeRegressHandler) HandleNotifyEvent(e event.UpdateEvent) error {
 		newErrCount += int(vertices[i].Metric.ErrorCount)
 	}
 
-	g.currentRatio = +(newErrCount - g.prevErrCount)
-	if g.currentRatio > 100 {
-		g.currentRatio = 100
-	} else if g.currentRatio < 0 {
+	// TODO Think about longer compactions maybe between hours or weeks
+	if newErrCount == 0 {
 		g.currentRatio = 0
+		g.prevErrCount = 0
+	} else {
+		g.currentRatio = +(newErrCount - g.prevErrCount)
+		if g.currentRatio > 100 {
+			g.currentRatio = 100
+		} else if g.currentRatio < 0 {
+			g.currentRatio = 0
+		}
 	}
+
 	g.prevErrCount = newErrCount
 
 	return nil

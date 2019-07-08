@@ -6,7 +6,7 @@ build() {
 
 # ARG - 1 port
 execute() {
-  docker run -it --rm -p "$1:8080" --device /dev/snd:/dev/snd --network host --name web_bit_accretion web_bit_accretion
+  docker run -it --rm -p "80:8080" --device /dev/snd:/dev/snd --network host --name web_bit_accretion web_bit_accretion
 }
 
 ### MAIN
