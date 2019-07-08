@@ -49,6 +49,8 @@ type ProviderNewRelic struct {
 	worker *worker.RelicWorker
 	// pluginHealth current state of extension
 	pluginHealth model.HealthState
+	// pluginIfo short info of new relic provider
+	pluginInfo model.ProviderDescription
 }
 
 // LoadConfig of new relic extension
@@ -119,6 +121,11 @@ func (nr *ProviderNewRelic) ProvideHealth() model.HealthState {
 	return nr.pluginHealth
 }
 
+// GetDescription of provider
+func (nr *ProviderNewRelic) GetDescription() model.ProviderDescription {
+	return nr.pluginInfo
+}
+
 // fetchMetricsWithGraph from API and put in to graph
 func (nr *ProviderNewRelic) fetchMetricsWithGraph(g *model.Graph, log logger.ILogger) {
 	appList := g.GetAllVertices()
@@ -182,5 +189,11 @@ func (nr *ProviderNewRelic) prepareGraph() (g *model.Graph) {
 
 // NewProvider returns instance with implemented interface
 func NewProvider() extension.IProvider {
-	return &ProviderNewRelic{pluginHealth: model.HealthNormal}
+	return &ProviderNewRelic{
+		pluginHealth: model.HealthNormal,
+		pluginInfo: model.ProviderDescription{
+			Name:               "New Relic API",
+			MetricsDescription: "Requests per minute",
+		},
+	}
 }

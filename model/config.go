@@ -17,3 +17,11 @@ type Config struct {
 	// DisplayEvenLogHistory limit to display rendered charts or logs
 	DisplayEvenLogHistory int16 `json:"display_even_log_history"`
 }
+
+// ProviderDescription with simple information
+type ProviderDescription struct {
+	// Name of provider
+	Name string
+	// MetricsDescription short info of it. Example: RPS - Requests per second or server statistic
+	MetricsDescription string
+}

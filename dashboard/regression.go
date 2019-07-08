@@ -10,8 +10,8 @@ import (
 
 // GaugeRegressHandler for dashboard
 type GaugeRegressHandler struct {
-	name string
-	gauge *gauge.Gauge
+	name   string
+	gauge  *gauge.Gauge
 	config *model.Config
 	// currentRatio showing regression of errors
 	currentRatio int
@@ -49,7 +49,7 @@ func (g *GaugeRegressHandler) GetName() string {
 }
 
 // NewRegressionWidget create and return prepared widget, shows % of ok/err requests as regression
-func NewRegressionWidget(name string, c *model.Config) (*GaugeRegressHandler, error){
+func NewRegressionWidget(name string, c *model.Config) (*GaugeRegressHandler, error) {
 	g, err := gauge.New(
 		gauge.Height(2),
 		gauge.Color(cell.ColorRed),
@@ -68,5 +68,3 @@ func NewRegressionWidget(name string, c *model.Config) (*GaugeRegressHandler, er
 
 	return widget, nil
 }
-
-

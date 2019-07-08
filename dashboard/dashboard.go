@@ -63,7 +63,7 @@ func (m *MonitoringDashboard) initWidgets(s extension.ISound, c *model.Config, n
 		return err
 	}
 
-	m.widgetCollection.regression, err = NewRegressionWidget("Regression level between requests and errors", c)
+	m.widgetCollection.regression, err = NewRegressionWidget("Regression level of errors", c)
 	if err != nil {
 		return err
 	}
@@ -75,7 +75,7 @@ func (m *MonitoringDashboard) initWidgets(s extension.ISound, c *model.Config, n
 func (m *MonitoringDashboard) createLayout(dashboardName string, t *terminalapi.Terminal) (err error) {
 	m.TerminalContainer, err = container.New(
 		*t,
-		container.Border(linestyle.None),
+		container.Border(linestyle.Light),
 		container.BorderTitle(dashboardName),
 		container.SplitHorizontal(
 			container.Top(
