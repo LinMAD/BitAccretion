@@ -64,7 +64,13 @@ func (k *Kernel) initDashboard(t terminalapi.Terminal) error {
 
 	log.Println("Creating terminal dashboard UI...")
 	var dErr error
-	k.d, dErr = dashboard.NewMonitoringDashboard("BitAccretion", k.c, k.s, t, g)
+	k.d, dErr = dashboard.NewMonitoringDashboard(
+		fmt.Sprintf("BitAccretion:%s - [%s]", k.p.GetDescription().Name, k.p.GetDescription().MetricsDescription),
+		k.c,
+		k.s,
+		t,
+		g,
+	)
 	if dErr != nil {
 		return dErr
 	}
@@ -89,7 +95,7 @@ func (k *Kernel) dashboardUpdate(ctx context.Context, delay time.Duration) {
 			}
 
 			isNeedToFetch = false
-			k.l.Normal("Requesting provider to get new data update...")
+			k.l.Normal(fmt.Sprintf("Requesting provider (%s) to get new data update...", k.p.GetDescription().Name))
 
 			providerGraph, providerGraphErr := k.p.FetchNewData(k.l)
 			if providerGraphErr != nil {
@@ -133,6 +139,7 @@ func (k *Kernel) Run(t terminalapi.Terminal) error {
 
 	fmt.Print("\033[H\033[2J") // Clean terminal screen from any artifacts
 
+	k.l.Normal("Dashboard ready and preparing to collect data...")
 	termErr := termdash.Run(
 		ctx,
 		t,

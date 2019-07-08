@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -50,6 +49,8 @@ type ProviderNewRelic struct {
 	worker *worker.RelicWorker
 	// pluginHealth current state of extension
 	pluginHealth model.HealthState
+	// pluginIfo short info of new relic provider
+	pluginInfo model.ProviderDescription
 }
 
 // LoadConfig of new relic extension
@@ -93,31 +94,23 @@ func (nr *ProviderNewRelic) DispatchGraph() (model.Graph, error) {
 // FetchNewData returns latest assembled graph
 func (nr *ProviderNewRelic) FetchNewData(log logger.ILogger) (model.Graph, error) {
 	g := nr.prepareGraph()
+	timeout := time.After(time.Duration(nr.Config.SurveyIntervalSec*2+1) * time.Second)
+	isProcessed := make(chan bool, 1)
 
-	log.Debug(fmt.Sprintf("Harvesting data from NewRelic API..."))
-
-	ctx, cancel := context.WithCancel(context.Background())
-
-	// Get info from API with timeout
-	ticker := time.NewTicker(time.Duration(nr.Config.SurveyIntervalSec*2+1) * time.Second)
-	defer ticker.Stop()
-	isExecuted := false // all only one coroutine
+	go func(g *model.Graph) {
+		log.Debug(fmt.Sprintf("Harvesting data from NewRelic API..."))
+		nr.fetchMetricsWithGraph(g, log)
+		isProcessed <- true
+	}(g)
 
 	for {
 		select {
-		default:
-			if isExecuted {
-				continue
-			}
-
-			isExecuted = true
-			go func(g *model.Graph) {
-				defer cancel()
-				nr.fetchMetricsWithGraph(g, log)
-			}(g)
-		case <-ticker.C:
-			cancel()
-		case <-ctx.Done():
+		case <-isProcessed:
+			nr.pluginHealth = model.HealthNormal
+			return *g, nil
+		case <-timeout:
+			log.Error("Timeout got from NewRelic provider...")
+			nr.pluginHealth = model.HealthWarning
 			return *g, nil
 		}
 	}
@@ -126,6 +119,11 @@ func (nr *ProviderNewRelic) FetchNewData(log logger.ILogger) (model.Graph, error
 // ProvideHealth will return health of extension if New Relic API alive\reachable
 func (nr *ProviderNewRelic) ProvideHealth() model.HealthState {
 	return nr.pluginHealth
+}
+
+// GetDescription of provider
+func (nr *ProviderNewRelic) GetDescription() model.ProviderDescription {
+	return nr.pluginInfo
 }
 
 // fetchMetricsWithGraph from API and put in to graph
@@ -191,5 +189,11 @@ func (nr *ProviderNewRelic) prepareGraph() (g *model.Graph) {
 
 // NewProvider returns instance with implemented interface
 func NewProvider() extension.IProvider {
-	return &ProviderNewRelic{pluginHealth: model.HealthNormal}
+	return &ProviderNewRelic{
+		pluginHealth: model.HealthNormal,
+		pluginInfo: model.ProviderDescription{
+			Name:               "New Relic API",
+			MetricsDescription: "Requests per minute",
+		},
+	}
 }

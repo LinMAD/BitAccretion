@@ -19,4 +19,6 @@ type IProvider interface {
 	// ProvideHealth must provide if extension still can work
 	// example API not reachable or extension has errors and it must be restarted
 	ProvideHealth() model.HealthState
+	// GetDescription of implemented provider
+	GetDescription() model.ProviderDescription
 }

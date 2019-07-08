@@ -26,6 +26,7 @@ type widgets struct {
 	reqAggregated *SparkLineWidgetHandler
 	eventLog      *AnnouncerHandler
 	clock         *ClockWidgetHandler
+	regression    *GaugeRegressHandler
 }
 
 // HandleNotifyEvent send update to monitoring dashboard
@@ -61,7 +62,8 @@ func (m *MonitoringDashboard) initWidgets(s extension.ISound, c *model.Config, n
 	if err != nil {
 		return err
 	}
-	m.widgetCollection.clock, err = NewClockWidget()
+
+	m.widgetCollection.regression, err = NewRegressionWidget("Regression level of errors", c)
 	if err != nil {
 		return err
 	}
@@ -73,7 +75,7 @@ func (m *MonitoringDashboard) initWidgets(s extension.ISound, c *model.Config, n
 func (m *MonitoringDashboard) createLayout(dashboardName string, t *terminalapi.Terminal) (err error) {
 	m.TerminalContainer, err = container.New(
 		*t,
-		container.Border(linestyle.Double),
+		container.Border(linestyle.Light),
 		container.BorderTitle(dashboardName),
 		container.SplitHorizontal(
 			container.Top(
@@ -82,10 +84,10 @@ func (m *MonitoringDashboard) createLayout(dashboardName string, t *terminalapi.
 						container.SplitHorizontal(
 							container.Top(
 								container.Border(linestyle.Round),
-								container.PlaceWidget(m.widgetCollection.clock.sdClock),
+								container.PlaceWidget(m.widgetCollection.regression.gauge),
 							),
 							container.Bottom(
-								container.Border(linestyle.Double),
+								container.Border(linestyle.Round),
 								container.BorderTitle("Event log"),
 								container.PlaceWidget(m.widgetCollection.eventLog.t),
 							),
@@ -143,6 +145,7 @@ func NewMonitoringDashboard(dashboardName string, c *model.Config, s extension.I
 	termDash.observer.RegisterNewSubscriber(termDash.widgetCollection.reqIncorrect)
 	termDash.observer.RegisterNewSubscriber(termDash.widgetCollection.reqAggregated)
 	termDash.observer.RegisterNewSubscriber(termDash.widgetCollection.eventLog)
+	termDash.observer.RegisterNewSubscriber(termDash.widgetCollection.regression)
 
 	return termDash, nil
 }

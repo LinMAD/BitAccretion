@@ -1,6 +1,8 @@
 package main
 
 import (
+	"runtime"
+
 	"github.com/LinMAD/BitAccretion/core"
 	"github.com/LinMAD/BitAccretion/extension"
 	"github.com/LinMAD/BitAccretion/model"
@@ -8,6 +10,8 @@ import (
 )
 
 func main() {
+	runtime.GOMAXPROCS(runtime.NumCPU())
+
 	t, err := termbox.New()
 	if err != nil {
 		panic(err)

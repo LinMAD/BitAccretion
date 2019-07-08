@@ -11,6 +11,7 @@ import (
 // FakeProvider randomly generates dummy data
 type FakeProvider struct {
 	pluginHealth model.HealthState
+	pluginInfo   model.ProviderDescription
 }
 
 // LoadConfig stub
@@ -40,9 +41,20 @@ func (f *FakeProvider) ProvideHealth() model.HealthState {
 	return f.pluginHealth
 }
 
+// GetDescription of provider
+func (f *FakeProvider) GetDescription() model.ProviderDescription {
+	return f.pluginInfo
+}
+
 // NewProvider implementation
 func NewProvider() extension.IProvider {
-	return &FakeProvider{pluginHealth: model.HealthNormal}
+	return &FakeProvider{
+		pluginHealth: model.HealthNormal,
+		pluginInfo: model.ProviderDescription{
+			Name:               "Fake provider",
+			MetricsDescription: "Random generated data",
+		},
+	}
 }
 
 // GetStubNodes generated dummy nodes with data
